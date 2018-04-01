@@ -1,0 +1,25 @@
+# ignore eclipse related files and directories
+.classpath
+.project
+.settings
+bin
+
+# ignore intellij related files and directories
+.idea
+*.iml
+
+# ignore netbeans related files and directories
+/nbproject/
+
+# ignore maven related files and directories
+target
+
+# ignore gradle related files and directories
+build
+.gradle
+
+# ignore Mac OSX related files and directories
+.DS_Store
+
+# temporary (sources we copied as an example from another project)
+src/main/java/info/rsdev/opendata/openkvk/*

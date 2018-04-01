@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{1.}[%line] - %msg%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="info.rsdev.playlists.services.Top40ScrapeService" level="DEBUG" />
+		<Root level="ERROR">
+			<AppenderRef ref="Console" />
+		</Root>
+	</Loggers>
+</Configuration>
