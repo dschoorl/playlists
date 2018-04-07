@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.domain.ChartsItem;
+import info.rsdev.playlists.domain.Song;
 
 public class Top40ScrapeService implements ScrapeService {
 
@@ -108,11 +109,11 @@ public class Top40ScrapeService implements ScrapeService {
         String songTitle = itemElement.selectFirst("div.song-details h3.title").text();
         String artist = itemElement.selectFirst("div.song-details p.artist").text();
         byte position = Byte.parseByte(itemElement.selectFirst("div.dot-icon").text());
-        boolean isNewRelease = isNewRelease(itemElement);
-        return new ChartsItem(chartName, year, weekNumber, position, isNewRelease, artist, songTitle);
+        boolean isNewInChart = isNewInChart(itemElement);
+        return new ChartsItem(chartName, year, weekNumber, position, isNewInChart, new Song(artist, songTitle));
     }
     
-    boolean isNewRelease(Element itemElement) {
+    boolean isNewInChart(Element itemElement) {
     	Elements statColumns = itemElement.select("div.statcolumn strong");
     	if (statColumns.size() >= 2) {
     		return statColumns.get(1).text().equals("1");

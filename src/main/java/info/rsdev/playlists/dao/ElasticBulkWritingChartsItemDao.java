@@ -16,9 +16,12 @@
 package info.rsdev.playlists.dao;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeSet;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -38,14 +41,14 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.domain.ChartsItem;
+import info.rsdev.playlists.domain.Song;
 
 public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
 
@@ -53,6 +56,18 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
 
     private static final String CHARTSITEM_INDEX_NAME = "chartitems";
     private static final String CHARTSITEM_DOCTYPE = "chartitem";
+    
+    private static final String CHARTNAME = "chartName";
+    private static final String YEAR = "year";
+    private static final String WEEK = "weekNumber";
+    private static final String POSITION = "position";
+    private static final String IS_NEW_IN_CHART = "isNewRelease";
+    private static final String ARTIST = "artist";
+    private static final String TITLE = "title";
+    
+    
+    private static final int RETURN_NO_DOCUMENTS = 0;
+    private static final int ROUNDUP_FACTOR = 100;
 
     private final RestHighLevelClient elasticsearchClient;
 
@@ -133,13 +148,13 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
                 .startObject()
                     .startObject(CHARTSITEM_DOCTYPE)
                         .startObject("properties")
-                            .startObject("chartName").field("type", "keyword").endObject()
-                            .startObject("year").field("type", "short").endObject()
-                            .startObject("weekNumber").field("type", "byte").endObject()
-                            .startObject("position").field("type", "byte").endObject()
-                            .startObject("isNewRelease").field("type", "boolean").endObject()
-                            .startObject("artist").field("type", "text").endObject()
-                            .startObject("title").field("type", "text").endObject()
+                            .startObject(CHARTNAME).field("type", "keyword").endObject()
+                            .startObject(YEAR).field("type", "short").endObject()
+                            .startObject(WEEK).field("type", "byte").endObject()
+                            .startObject(POSITION).field("type", "byte").endObject()
+                            .startObject(IS_NEW_IN_CHART).field("type", "boolean").endObject()
+                            .startObject(ARTIST).field("type", "text").endObject()
+                            .startObject(TITLE).field("type", "text").endObject()
                         .endObject()
                     .endObject()
                 .endObject();
@@ -156,54 +171,17 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         this.bulkProcessor.add(request);
     }
 
-    public Collection<String> getAllPlaatsnamen() {
-        int estimatedCardinality = countUniqueTerms("woonplaats", 1000);
-        return getUniqueTerms("woonplaats", estimatedCardinality);
-    }
-
-    public Collection<String> getAllGemeentenamen() {
-        int estimatedCardinality = countUniqueTerms("gemeente", 1000);
-        return getUniqueTerms("gemeente", estimatedCardinality);
-    }
-
-    private int countUniqueTerms(String fieldName, int roundFactor) {
-        //TODO: ask ES for the right number and roundup to nearest multiple of roundFactor
-        int elasticSearchResultCount = 2421;    //fictional number
-        return ((elasticSearchResultCount / roundFactor) + 1) * roundFactor;
-    }
-
-    private Collection<String> getUniqueTerms(String fieldName, int expectedSize) {
-        SearchRequest searchRequest = new SearchRequest(CHARTSITEM_INDEX_NAME);
-        searchRequest.types(CHARTSITEM_DOCTYPE);
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.fetchSource(false);
-        TermsAggregationBuilder aggregation = AggregationBuilders.terms("by_field")
-                .field(fieldName)
-                .size(expectedSize);
-        searchSourceBuilder.aggregation(aggregation);
-        searchRequest.source(searchSourceBuilder);
-        try {
-            SearchResponse searchResponse = elasticsearchClient.search(searchRequest);
-            Terms plaatsnamen = searchResponse.getAggregations().get("by_field");
-            return plaatsnamen.getBuckets().stream()
-                    .map(bucket -> bucket.getKeyAsString())
-                    .collect(Collectors.toSet());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private XContentBuilder toContentBuilder(ChartsItem chartsItem) {
         try {
             return XContentFactory.jsonBuilder()
                 .startObject()
-                    .field("chartName", chartsItem.chartName)
-                    .field("year", chartsItem.year)
-                    .field("weekNumber", chartsItem.weekNumber)
-                    .field("position", chartsItem.position)
-                    .field("isNewRelease", chartsItem.isNewRelease)
-                    .field("artist", chartsItem.artist)
-                    .field("title", chartsItem.title)
+                    .field(CHARTNAME, chartsItem.chartName)
+                    .field(YEAR, chartsItem.year)
+                    .field(WEEK, chartsItem.weekNumber)
+                    .field(POSITION, chartsItem.position)
+                    .field(IS_NEW_IN_CHART, chartsItem.isNewRelease)
+                    .field(ARTIST, chartsItem.song.artist)
+                    .field(TITLE, chartsItem.song.title)
                 .endObject();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -213,5 +191,65 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
     public void close() {
         this.bulkProcessor.close();
     }
+
+	@Override
+	public Collection<Song> getReleases(short year) {
+		int expectedResults = getReleasesCount(year, ROUNDUP_FACTOR);
+		if (expectedResults == 0) {
+			return Collections.emptyList();
+		}
+		
+        SearchRequest searchRequest = makeSearchRequestReleasesByYear(year, expectedResults);
+        try {
+            SearchResponse searchResponse = elasticsearchClient.search(searchRequest);
+            TreeSet<Song> releases = new TreeSet<>();
+            searchResponse.getHits().forEach(searchHit -> releases.add(makeSong(searchHit.getSourceAsMap())));
+            return releases;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+	}
+
+	private Song makeSong(Map<String, Object> properties) {
+		String artist = (String)properties.get(ARTIST);
+		String title = (String)properties.get(TITLE);
+		return new Song(artist, title);
+	}
+
+	private int getReleasesCount(short year, int roundFactor) {
+        SearchRequest searchRequest = makeSearchRequestReleasesByYear(year, RETURN_NO_DOCUMENTS);
+        try {
+            SearchResponse searchResponse = elasticsearchClient.search(searchRequest);
+            long elasticSearchResultCount = searchResponse.getHits().getTotalHits();
+            if (elasticSearchResultCount == 0) {
+	        	return 0;
+	        }
+            elasticSearchResultCount = ((elasticSearchResultCount / roundFactor) + 1) * roundFactor;
+            if (elasticSearchResultCount > Integer.MAX_VALUE) {
+            	throw new IllegalStateException("totalhits > Integer.MAX_VALUE is not supported");
+            }
+            return (int)elasticSearchResultCount;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+	}
+	
+	private SearchRequest makeSearchRequestReleasesByYear(short year, int limitResults) {
+        SearchRequest searchRequest = new SearchRequest(CHARTSITEM_INDEX_NAME);
+        searchRequest.types(CHARTSITEM_DOCTYPE);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.size(limitResults);
+        searchSourceBuilder.storedFields(Arrays.asList(ARTIST, TITLE));
+        searchSourceBuilder.fetchSource(true);
+        BoolQueryBuilder filterQuery = QueryBuilders.boolQuery()
+        		.filter(QueryBuilders.termQuery("isNewRelease", true))
+        		.filter(QueryBuilders.rangeQuery("year")
+        				.gte(year)
+        				.lte(year)
+        		);
+        searchSourceBuilder.query(filterQuery);
+        searchRequest.source(searchSourceBuilder);
+        return searchRequest;
+	}
 
 }

@@ -26,20 +26,17 @@ public class ChartsItem {
     public final byte position;
     
     public final boolean isNewRelease;
-
-    public final String artist;
-
-    public final String title;
+    
+    public final Song song;
 
     public ChartsItem(String chartName, short year, byte weekNumber, byte position, boolean isNewRelease, 
-            String artist, String title) {
+            Song song) {
         this.chartName = chartName;
         this.year = year;
         this.weekNumber = weekNumber;
         this.position = position;
         this.isNewRelease = isNewRelease;
-        this.artist = artist;
-        this.title = title;
+        this.song = song;
     }
 
     @Override public String toString() {
@@ -49,8 +46,8 @@ public class ChartsItem {
                 ", weekNumber=" + weekNumber +
                 ", position=" + position +
                 ", new=" + isNewRelease +
-                ", artist='" + artist + '\'' +
-                ", title='" + title + '\'' +
+                ", artist='" + song.artist + '\'' +
+                ", title='" + song.title + '\'' +
                 '}';
     }
 }

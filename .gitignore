@@ -10,6 +10,7 @@ bin
 
 # ignore netbeans related files and directories
 /nbproject/
+nb-*
 
 # ignore maven related files and directories
 target

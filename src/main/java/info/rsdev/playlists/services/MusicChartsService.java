@@ -46,6 +46,8 @@ public class MusicChartsService implements SingleService {
         if (chartsItemDao.setupStoreWhenNeeded()) {
             loadData();
         }
+        
+        LOGGER.info(String.format("New releaes in 2018: %d", chartsItemDao.getReleases((short)2018).size()));
     }
 
     private void loadData() {

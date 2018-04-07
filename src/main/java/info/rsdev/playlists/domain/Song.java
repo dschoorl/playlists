@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.dao;
+package info.rsdev.playlists.domain;
 
-import java.util.Collection;
+public class Song implements Comparable<Song> {
 
-import info.rsdev.playlists.domain.ChartsItem;
-import info.rsdev.playlists.domain.Song;
+    public final String artist;
 
-public interface ChartsItemDao {
+    public final String title;
 
-    /**
-     * prepare an existing datastore to persist {@link ChartsItem} instances. If the data store is already
-     * setup, this method will do nothing
-     * @return true if the persistence store was newly created, false otherwise
-     */
-    boolean setupStoreWhenNeeded();
+    public Song(String artist, String title) {
+    	this.artist = artist;
+    	this.title = title;
+    }
 
-    void saveOrUpdate(ChartsItem chartsItem);
-    
-    Collection<Song> getReleases(short year);
+	@Override
+	public int compareTo(Song o) {
+		if (artist.equals(o.artist)) {
+			return title.compareTo(o.title);
+		}
+		return artist.compareTo(o.artist);
+	}
     
 }
