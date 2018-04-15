@@ -18,10 +18,8 @@ package info.rsdev.playlists.services;
 public enum MusicChart { 
 
     TOP40("Top 40", (short)1965, (byte)1),
-//    TOP40("Top 40", (short)2017, (byte)1),
 
     TIPPARADE("Tipparade", (short)1967, (byte)28);
-//    TIPPARADE("Tipparade", (short)2017, (byte)1);
 
     private String name;
     

@@ -33,5 +33,10 @@ public class Song implements Comparable<Song> {
 		}
 		return artist.compareTo(o.artist);
 	}
-    
+
+	@Override
+	public String toString() {
+		return "Song [artist=" + artist + ", title=" + title + "]";
+	}
+	
 }

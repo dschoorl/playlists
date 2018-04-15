@@ -15,12 +15,16 @@
  */
 package info.rsdev.playlists.ioc;
 
+import javax.inject.Inject;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
 
 import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.dao.ElasticBulkWritingChartsItemDao;
@@ -30,9 +34,12 @@ import info.rsdev.playlists.dao.ElasticBulkWritingChartsItemDao;
  * @author Dave Schoorl
  */
 @Configuration
-@PropertySource(value = "classpath:/elastic.properties")
+@PropertySource(value = "file:${user.home}/.playlists/elasticsearch.properties")
 public class SpringDatalayerConfig {
-
+	
+	@Inject
+	Environment env;
+	
     @Bean
     public ChartsItemDao chartsItemDao(RestHighLevelClient elasticClient) {
         return new ElasticBulkWritingChartsItemDao(elasticClient);
@@ -40,7 +47,9 @@ public class SpringDatalayerConfig {
 
     @Bean
     public RestHighLevelClient elasticClient() {
-        return new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
+    	String hostname = env.getProperty("es.hostname", "localhost");
+    	int portnumber = Integer.parseInt(env.getProperty("es.portnumber", "9200"));
+        return new RestHighLevelClient(RestClient.builder(new HttpHost(hostname, portnumber, "http")));
     }
-
+    
 }

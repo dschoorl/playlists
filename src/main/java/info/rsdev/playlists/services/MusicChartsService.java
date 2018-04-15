@@ -17,6 +17,7 @@ package info.rsdev.playlists.services;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.domain.ChartsItem;
+import info.rsdev.playlists.domain.Song;
 
 public class MusicChartsService implements SingleService {
 
@@ -46,8 +48,11 @@ public class MusicChartsService implements SingleService {
         if (chartsItemDao.setupStoreWhenNeeded()) {
             loadData();
         }
-        
-        LOGGER.info(String.format("New releaes in 2018: %d", chartsItemDao.getReleases((short)2018).size()));
+        List<Song> songs2018 = new ArrayList<>(chartsItemDao.getReleases((short)2018));
+        LOGGER.info(String.format("New releaes in 2018: %d. These include titles like:", songs2018.size()));
+        for (int i=0; i < Math.min(10, songs2018.size()); i++) {
+        	LOGGER.info(songs2018.get(i).toString());
+        }
     }
 
     private void loadData() {
