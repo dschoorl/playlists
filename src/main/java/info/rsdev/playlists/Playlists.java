@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import info.rsdev.playlists.domain.ChartsPlaylist;
 import info.rsdev.playlists.ioc.SpringPlaylistsConfig;
+import info.rsdev.playlists.services.MusicCatalogService;
 import info.rsdev.playlists.services.SingleService;
 
 /**
@@ -35,6 +37,8 @@ public class Playlists {
 
     @Inject
     private SingleService singleService;
+    
+    @Inject MusicCatalogService catalogService;
 
     /**
      * @param args the command line arguments
@@ -49,8 +53,10 @@ public class Playlists {
     private void start(String[] args) {
     	long startTime = System.currentTimeMillis();
         singleService.init();
-
         LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime)/1000));
+        
+        ChartsPlaylist chartsOf2018 = catalogService.getOrCreatePlaylist((short)2018);
+        LOGGER.info(String.format("Playlist exists: '%s'", chartsOf2018.name));
     }
 
 }
