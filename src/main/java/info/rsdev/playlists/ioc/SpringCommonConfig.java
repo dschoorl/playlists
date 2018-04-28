@@ -15,22 +15,21 @@
  */
 package info.rsdev.playlists.ioc;
 
-import java.util.Base64;
-
 import javax.inject.Inject;
 
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
+import com.wrapper.spotify.exceptions.detailed.UnauthorizedException;
+
 import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.services.MusicCatalogService;
 import info.rsdev.playlists.services.MusicChartsService;
+import info.rsdev.playlists.services.MusicTitleService;
 import info.rsdev.playlists.services.ScrapeService;
-import info.rsdev.playlists.services.SingleService;
 import info.rsdev.playlists.services.SpotifyCatalogService;
 import info.rsdev.playlists.services.Top40ScrapeService;
 
@@ -47,7 +46,7 @@ public class SpringCommonConfig {
     Environment env;
 
     @Bean
-    SingleService singleService(ScrapeService scrapeService, ChartsItemDao chartsItemDao) {
+    MusicTitleService singleService(ScrapeService scrapeService, ChartsItemDao chartsItemDao) {
         return new MusicChartsService(scrapeService, chartsItemDao);
     }
 
@@ -62,15 +61,24 @@ public class SpringCommonConfig {
         String clientSecret = env.getRequiredProperty("spotify.clientSecret");
         String accessToken = env.getProperty("spotify.accessToken");
         String refreshToken = env.getProperty("spotify.refreshToken");
-        if (Strings.isBlank(accessToken) && Strings.isBlank(refreshToken)) {
+        SpotifyCatalogService catalogService = null;
+        try {
+        	catalogService = new SpotifyCatalogService(clientId, clientSecret, accessToken, refreshToken);
+        } catch (RuntimeException e) {
+        	handleRuntimeException(e);
+        }
+        return catalogService;
+    }
+
+	private void handleRuntimeException(RuntimeException e) {
+		if (e.getCause() instanceof UnauthorizedException) {
+	        String clientId = env.getRequiredProperty("spotify.clientId");
         	String message = String.format("Get your access- and refreshToken through your web browser at:%nhttps://accounts.spotify.com/authorize" +
         			"?response_type=token&client_id=%s&redirect_uri=https%%3A%%2F%%2Frsdev.info&scope=playlist-read-private%%20playlist-modify-private%%20playlist-modify%n", clientId);
-        	byte[] basicAuth = (clientId + ":" + clientSecret).getBytes();
-        	message += String.format("Use Authorization header with value: %s", Base64.getEncoder().encodeToString(basicAuth));
-        	throw new IllegalStateException(message);
-        	//code = AQCUyAPg2g5_tJ_7m-TbnbjxO_VIYKLve4VvBJwGvQfQowWPcCOFsDfSoqPkZVX7RAoJcUK7oZO1UKlN3JAUgnAzGzhiW-CHu-OkYB_JsByFJWK9_Ezr_ArXb_wZrbxnTDk-dFUKXxYyB-dLDbpupgdm_PObsadeW7S96JLjTZkvsCCWXI-AKogdD9olYokMthdI98AzQPmnSwmtgUjxvTsoSUnj75cwG6vtOG9IwX9yi25bxb3XnQ
-        	//token = 
-        }
-        return new SpotifyCatalogService(clientId, clientSecret, accessToken, refreshToken);
-    }
+//        	byte[] basicAuth = (clientId + ":" + clientSecret).getBytes();
+//        	message += String.format("Use Authorization header with value: %s", Base64.getEncoder().encodeToString(basicAuth));
+        	throw new IllegalStateException(message, e);
+		}
+		throw e;
+	}
 }

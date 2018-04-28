@@ -19,8 +19,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.TreeSet;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -202,7 +203,7 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         SearchRequest searchRequest = makeSearchRequestReleasesByYear(year, expectedResults);
         try {
             SearchResponse searchResponse = elasticsearchClient.search(searchRequest);
-            TreeSet<Song> releases = new TreeSet<>();
+            Set<Song> releases = new LinkedHashSet<>();
             searchResponse.getHits().forEach(searchHit -> releases.add(makeSong(searchHit.getSourceAsMap())));
             return releases;
         } catch (IOException e) {

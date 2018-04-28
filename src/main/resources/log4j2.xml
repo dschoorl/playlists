@@ -6,7 +6,7 @@
         </Console>
     </Appenders>
     <Loggers>
-    	<Logger name="info.rsdev.playlists.services.MusicChartsService" level="INFO" />
+    	<Logger name="info.rsdev.playlists.services" level="INFO" />
     	<Logger name="info.rsdev.playlists.Playlists" level="INFO" />
         <Root level="WARN">
             <AppenderRef ref="Console"/>

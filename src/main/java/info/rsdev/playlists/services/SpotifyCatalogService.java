@@ -15,6 +15,8 @@
  */
 package info.rsdev.playlists.services;
 
+import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -23,10 +25,13 @@ import org.slf4j.LoggerFactory;
 
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
+import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.Playlist;
 import com.wrapper.spotify.model_objects.specification.PlaylistSimplified;
+import com.wrapper.spotify.model_objects.specification.Track;
 import com.wrapper.spotify.model_objects.specification.User;
 import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
+import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
 
 import info.rsdev.playlists.Playlists;
@@ -39,8 +44,6 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	
     private static final Logger LOGGER = LoggerFactory.getLogger(Playlists.class);
 
-	private static final String PLAYLIST_NAME_TEMPLATE = "%d charted songs";
-	
     private final SpotifyApi spotifyApi;
     
     private final User currentUser;
@@ -58,18 +61,42 @@ public class SpotifyCatalogService implements MusicCatalogService {
 
     @Override
 	public Optional<SongFromCatalog> findSong(Song song) {
-		// TODO Auto-generated method stub
-		return null;
+    	try {
+			SearchTracksRequest searchRequest = spotifyApi.searchTracks(makeQueryString(song)).build();
+			Paging<Track> searchResult = searchRequest.execute();
+			int hits = searchResult.getTotal();
+			if (hits == 0) {
+				return Optional.empty();
+			} else {
+				return selectRightResult(song, searchResult);
+			}
+		} catch (SpotifyWebApiException | IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Optional<SongFromCatalog> selectRightResult(Song song, Paging<Track> searchResult) {
+		//select track with highest popularity score
+		Track mostPopularTrack = null;
+		for (Track candidate : searchResult.getItems()) {
+			if ((mostPopularTrack == null) || (mostPopularTrack.getPopularity() < candidate.getPopularity())) {
+				mostPopularTrack = candidate;
+			}
+		}
+		return Optional.ofNullable(makeSongFromCatalog(song, mostPopularTrack));
+	}
+
+	private SongFromCatalog makeSongFromCatalog(Song song, Track spotifyTrack) {
+		return new SongFromCatalog(song, spotifyTrack.getId());
 	}
 
 	@Override
-	public ChartsPlaylist getOrCreatePlaylist(short year) {
-		return findPlaylistForYear(year)
-				.orElseGet(() -> createPlaylistForYear(year));
+	public ChartsPlaylist getOrCreatePlaylist(String playlistName) {
+		return findPlaylistForYear(playlistName)
+				.orElseGet(() -> createPlaylistForYear(playlistName));
 	}
 	
-	private Optional<ChartsPlaylist> findPlaylistForYear(short year) {
-		String targetName = String.format(PLAYLIST_NAME_TEMPLATE, year);
+	private Optional<ChartsPlaylist> findPlaylistForYear(String targetName) {
 		PlaylistIterator iterator = new PlaylistIterator(spotifyApi);
 		while (iterator.hasNext()) {
 			PlaylistSimplified spotifyPlaylist = iterator.next();
@@ -81,8 +108,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		return Optional.empty();
 	}
 	
-	private ChartsPlaylist createPlaylistForYear(short year) {
-		String newPlaylistName = String.format(PLAYLIST_NAME_TEMPLATE, year);
+	private ChartsPlaylist createPlaylistForYear(String newPlaylistName) {
 		CreatePlaylistRequest createRequest = spotifyApi.createPlaylist(currentUser.getId(), newPlaylistName).build();
 		try {
 			return makePlaylist(createRequest.execute());

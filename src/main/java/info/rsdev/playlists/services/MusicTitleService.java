@@ -15,7 +15,13 @@
  */
 package info.rsdev.playlists.services;
 
-public interface SingleService {
+import java.util.List;
+
+import info.rsdev.playlists.domain.Song;
+
+public interface MusicTitleService {
 
     void init();
+    
+    List<Song> getChartedSongsForYear(short year);
 }

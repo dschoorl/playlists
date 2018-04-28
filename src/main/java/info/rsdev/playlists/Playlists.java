@@ -15,6 +15,8 @@
  */
 package info.rsdev.playlists;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -22,10 +24,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import info.rsdev.playlists.domain.ChartsPlaylist;
+import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.ioc.SpringPlaylistsConfig;
-import info.rsdev.playlists.services.MusicCatalogService;
-import info.rsdev.playlists.services.SingleService;
+import info.rsdev.playlists.services.MusicTitleService;
+import info.rsdev.playlists.services.PlaylistService;
 
 /**
  *
@@ -33,12 +35,15 @@ import info.rsdev.playlists.services.SingleService;
  */
 public class Playlists {
 
+	private static final String PLAYLIST_NAME_TEMPLATE = "%d charted songs";
+	
     private static final Logger LOGGER = LoggerFactory.getLogger(Playlists.class);
 
     @Inject
-    private SingleService singleService;
+    private MusicTitleService titleService;
     
-    @Inject MusicCatalogService catalogService;
+    @Inject 
+    private PlaylistService playlistService;
 
     /**
      * @param args the command line arguments
@@ -52,11 +57,13 @@ public class Playlists {
 
     private void start(String[] args) {
     	long startTime = System.currentTimeMillis();
-        singleService.init();
-        LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime)/1000));
+        titleService.init();
         
-        ChartsPlaylist chartsOf2018 = catalogService.getOrCreatePlaylist((short)2018);
-        LOGGER.info(String.format("Playlist exists: '%s'", chartsOf2018.name));
+        short year = 2018;
+        List<Song> chartedSongs = titleService.getChartedSongsForYear(year);
+        playlistService.makePlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
+        
+        LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime)/1000));
     }
 
 }

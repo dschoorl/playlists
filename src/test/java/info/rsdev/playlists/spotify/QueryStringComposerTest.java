@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.services;
+package info.rsdev.playlists.spotify;
 
-import java.util.Optional;
+import static org.junit.Assert.assertEquals;
 
-import info.rsdev.playlists.domain.SongFromCatalog;
-import info.rsdev.playlists.domain.ChartsPlaylist;
+import org.junit.Test;
+
 import info.rsdev.playlists.domain.Song;
 
-public interface MusicCatalogService {
-	
-	Optional<SongFromCatalog> findSong(Song song);
-	
-	ChartsPlaylist getOrCreatePlaylist(String playlistName);
-	
-	void addToPlaylist(SongFromCatalog catalogItem, ChartsPlaylist playlist);
+public class QueryStringComposerTest {
+
+	@Test
+	public void testFilterFeaturingFromArtistName() throws Exception {
+		String queryString = QueryStringComposer.makeQueryString(new Song("Jannus (featuring Marieke)", "The world is a beautiful thing"));
+		assertEquals("artist:jannus+marieke%20title:beautiful+is+thing+world", queryString);
+	}
 
 }

@@ -29,7 +29,7 @@ import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.domain.Song;
 
-public class MusicChartsService implements SingleService {
+public class MusicChartsService implements MusicTitleService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MusicChartsService.class);
 
@@ -48,11 +48,11 @@ public class MusicChartsService implements SingleService {
         if (chartsItemDao.setupStoreWhenNeeded()) {
             loadData();
         }
-        List<Song> songs2018 = new ArrayList<>(chartsItemDao.getReleases((short)2018));
-        LOGGER.info(String.format("New releaes in 2018: %d. These include titles like:", songs2018.size()));
-        for (int i=0; i < Math.min(10, songs2018.size()); i++) {
-        	LOGGER.info(songs2018.get(i).toString());
-        }
+    }
+    
+    @Override
+    public List<Song> getChartedSongsForYear(short year) {
+    	return new ArrayList<>(chartsItemDao.getReleases(year));
     }
 
     private void loadData() {
