@@ -15,6 +15,7 @@
  */
 package info.rsdev.playlists.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,21 +38,23 @@ public class PlaylistService {
 	public void makePlaylistWithSongs(String playlistName, List<Song> songs) {
 		
 		ChartsPlaylist playlist = catalogService.getOrCreatePlaylist(playlistName);
-
+		List<SongFromCatalog> songsFromCatalog = new ArrayList<>(songs.size());
 		int notFound = 0;
         for (Song song : songs) {
         	Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
         	if (!catalogSong.isPresent()) {
-        		LOGGER.info(String.format("%s - %s", song, catalogSong.map(item -> item.catalogTrackId).orElse("Not found")));
+        		LOGGER.info(String.format("%s - %s", song, catalogSong.map(item -> item.trackUri).orElse("Not found")));
         		notFound++;
         	}
         	
-        	catalogSong.ifPresent(fromCatalog -> catalogService.addToPlaylist(fromCatalog, playlist));
+        	catalogSong.ifPresent(fromCatalog -> songsFromCatalog.add(fromCatalog));
         }
         
         if (notFound > 0) {
         	LOGGER.warn("Total # not found on spotify: " + notFound);
         }
+        
+        catalogService.addToPlaylist(playlist, songsFromCatalog);
 	}
 	
 }

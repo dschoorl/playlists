@@ -18,10 +18,10 @@ package info.rsdev.playlists.domain;
 public class SongFromCatalog {
 
     public final Song song;
-    public final String catalogTrackId;
+    public final String trackUri;
 
-    public SongFromCatalog(Song song, String catalogTrackId) {
+    public SongFromCatalog(Song song, String trackUri) {
         this.song = song;
-        this.catalogTrackId = catalogTrackId;
+        this.trackUri = trackUri;
     }
 }

@@ -19,8 +19,10 @@ import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +30,13 @@ import org.slf4j.LoggerFactory;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.exceptions.detailed.TooManyRequestsException;
+import com.wrapper.spotify.model_objects.special.SnapshotResult;
 import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.Playlist;
 import com.wrapper.spotify.model_objects.specification.PlaylistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import com.wrapper.spotify.model_objects.specification.User;
+import com.wrapper.spotify.requests.data.playlists.AddTracksToPlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
@@ -45,6 +49,8 @@ import info.rsdev.playlists.spotify.PlaylistIterator;
 public class SpotifyCatalogService implements MusicCatalogService {
 	
     private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyCatalogService.class);
+    
+    private static final int SEGMENT_SIZE = 50;
     
     private final Map<String, SongFromCatalog> queryCache;
 
@@ -113,7 +119,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 					throw new RuntimeException(e);
 				}
 				int sleepSecs = e.getRetryAfter() + 1;
-				LOGGER.warn(String.format("API Rate limit exceeded. Going to sleep for %d seconds", sleepSecs));
+				LOGGER.warn(String.format("SearchTracksRequest: API Rate limit exceeded. Going to sleep for %d seconds", sleepSecs));
 				try {
 					Thread.sleep(sleepSecs * 1000L);
 				} catch (InterruptedException ie) {
@@ -134,10 +140,6 @@ public class SpotifyCatalogService implements MusicCatalogService {
 			}
 		}
 		return Optional.ofNullable(makeSongFromCatalog(song, mostPopularTrack));
-	}
-
-	private SongFromCatalog makeSongFromCatalog(Song song, Track spotifyTrack) {
-		return new SongFromCatalog(song, spotifyTrack.getId());
 	}
 
 	@Override
@@ -175,11 +177,59 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		return new ChartsPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
 	}
 
-	@Override
-	public void addToPlaylist(SongFromCatalog song, ChartsPlaylist playlist) {
-		// TODO Auto-generated method stub
-
+	private SongFromCatalog makeSongFromCatalog(Song song, Track spotifyTrack) {
+		return new SongFromCatalog(song, spotifyTrack.getUri());
 	}
+
+	@Override
+	public void addToPlaylist(ChartsPlaylist playlist, List<SongFromCatalog> songs) {
+		List<String> trackIds = songs.stream().map(song -> song.trackUri).collect(Collectors.toList());
+		
+		//spotify accepts max. 100 songs in a single request
+		int nrOfSegments = (trackIds.size() / SEGMENT_SIZE) + ((trackIds.size() % SEGMENT_SIZE)==0 ? 0 : 1);
+		int currentSegment = 1;
+		String playlistId = playlist.catalogProviderId;
+		try {
+			while (currentSegment <= nrOfSegments) {
+				int toIndex = currentSegment * SEGMENT_SIZE;
+				int fromIndex = (currentSegment * SEGMENT_SIZE) - SEGMENT_SIZE;
+				List<String> segment = trackIds.subList(fromIndex, Math.min(toIndex, trackIds.size()));
+				
+				SnapshotResult result = addToPlaylistOnSpotify(playlistId, segment.toArray(new String[segment.size()]));
+//				playlistId = result.getSnapshotId();
+				currentSegment++;
+			}
+		} catch (SpotifyWebApiException | IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+    private SnapshotResult addToPlaylistOnSpotify(String playlistId, String[] trackIds) throws SpotifyWebApiException, IOException {
+    	int attempt = 0;
+		AddTracksToPlaylistRequest request = spotifyApi.addTracksToPlaylist(currentUser.getId(),playlistId, trackIds).build();
+		SnapshotResult response = null;
+		while (response == null) {
+			try {
+				response = request.execute();
+			} catch (TooManyRequestsException e) {
+				attempt++;
+				if (attempt > 2 ) {
+					throw new RuntimeException(e);
+				}
+				int sleepSecs = e.getRetryAfter() + 1;
+				LOGGER.warn(String.format("AddTracksToPlaylistRequest: API Rate limit exceeded. Going to sleep for %d seconds", sleepSecs));
+				try {
+					Thread.sleep(sleepSecs * 1000L);
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+				}
+				LOGGER.warn("Waking up and going on");
+			}
+		}
+		return response;
+    }
+
+
 	
 	private User getCurrentUser() {
 		GetCurrentUsersProfileRequest userRequest = spotifyApi.getCurrentUsersProfile().build();

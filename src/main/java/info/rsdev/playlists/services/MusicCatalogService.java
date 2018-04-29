@@ -15,11 +15,12 @@
  */
 package info.rsdev.playlists.services;
 
+import java.util.List;
 import java.util.Optional;
 
-import info.rsdev.playlists.domain.SongFromCatalog;
 import info.rsdev.playlists.domain.ChartsPlaylist;
 import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.domain.SongFromCatalog;
 
 public interface MusicCatalogService {
 	
@@ -27,6 +28,6 @@ public interface MusicCatalogService {
 	
 	ChartsPlaylist getOrCreatePlaylist(String playlistName);
 	
-	void addToPlaylist(SongFromCatalog catalogItem, ChartsPlaylist playlist);
+	void addToPlaylist(ChartsPlaylist playlist, List<SongFromCatalog> songs);
 
 }
