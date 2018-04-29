@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.rsdev.playlists.domain.ChartsPlaylist;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.domain.SongFromCatalog;
 
@@ -33,16 +34,24 @@ public class PlaylistService {
     @Inject 
     private MusicCatalogService catalogService;
     
-	public String makePlaylistWithSongs(String playlistName, List<Song> songs) {
-        LOGGER.info(String.format("New releaes in 2018: %d. These include titles like:", songs.size()));
+	public void makePlaylistWithSongs(String playlistName, List<Song> songs) {
+		
+		ChartsPlaylist playlist = catalogService.getOrCreatePlaylist(playlistName);
+
+		int notFound = 0;
         for (Song song : songs) {
         	Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
         	if (!catalogSong.isPresent()) {
         		LOGGER.info(String.format("%s - %s", song, catalogSong.map(item -> item.catalogTrackId).orElse("Not found")));
+        		notFound++;
         	}
+        	
+        	catalogSong.ifPresent(fromCatalog -> catalogService.addToPlaylist(fromCatalog, playlist));
         }
-
-		return null;
+        
+        if (notFound > 0) {
+        	LOGGER.warn("Total # not found on spotify: " + notFound);
+        }
 	}
-
+	
 }

@@ -17,7 +17,9 @@ package info.rsdev.playlists.spotify;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -28,17 +30,23 @@ public class QueryStringComposer {
 	
 	private static final Set<String> ARTIST_NOISE_WORDS = new HashSet<>();
 	private static final Set<String> TITLE_NOISE_WORDS = new HashSet<>();
+	private static final Map<String, String> ARTIST_ALIASSES = new HashMap<>();
 	static {
 		//all entries must be lower case
-		ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "with", "and", "x", "+"));
-		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de"));
+		ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "with", "and", "x", "+", "vs", "vs."));
+		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-"));
+		
+		ARTIST_ALIASSES.put("ATC", "A Touch Of Class");
 	}
 	
 	public static String makeQueryString(Song song) throws UnsupportedEncodingException {
-		Set<String> titleWords = splitToWords(song.title);
+		String title = chooseOneWhenThereIsDoubleASide(song.title);
+		Set<String> titleWords = splitToLowercaseWords(title);
 		titleWords.removeAll(TITLE_NOISE_WORDS);
-		Set<String> artistWords = splitToWords(song.artist);
+		
+		Set<String> artistWords = splitToLowercaseWords(song.artist);
 		artistWords.removeAll(ARTIST_NOISE_WORDS);
+		artistWords = artistWords.stream().map(QueryStringComposer::replaceAliasses).collect(Collectors.toSet());
 		
 		StringBuilder query = new StringBuilder();
 		appendField(query, "artist", artistWords);
@@ -49,6 +57,20 @@ public class QueryStringComposer {
 		return query.toString();
 	}
 	
+	private static String chooseOneWhenThereIsDoubleASide(String title) {
+		if (title.contains("/")) {
+			return title.substring(0, title.indexOf("/"));
+		}
+		return title;
+	}
+
+	private static String replaceAliasses(String word) {
+		if (ARTIST_ALIASSES.containsKey(word)) {
+			return ARTIST_ALIASSES.get(word);
+		}
+		return word;
+	}
+	
 	private static StringBuilder appendField(StringBuilder query, String fieldName, Set<String> words) throws UnsupportedEncodingException {
 		if (!words.isEmpty()) {
 			query.append(fieldName).append(":");
@@ -57,7 +79,7 @@ public class QueryStringComposer {
 		return query;
 	}
 
-	private static Set<String> splitToWords(String field) {
+	private static Set<String> splitToLowercaseWords(String field) {
 		String[] words = field.toLowerCase().split("[\\s\\(\\)\\,\\&]");
 		Set<String> result = new TreeSet<>();	//apply alphabetic ordering to make unit testing easier
 		for (String word : words) {
@@ -67,5 +89,5 @@ public class QueryStringComposer {
 		}
 		return result;
 	}
-
+	
 }
