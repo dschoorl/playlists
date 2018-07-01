@@ -18,10 +18,10 @@ package info.rsdev.playlists.services;
 import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -41,10 +41,13 @@ import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
 
-import info.rsdev.playlists.domain.ChartsPlaylist;
+import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.domain.SongFromCatalog;
 import info.rsdev.playlists.spotify.PlaylistIterator;
+import info.rsdev.playlists.spotify.PlaylistTrackIterator;
+import info.rsdev.playlists.spotify.QueryCache;
+import info.rsdev.playlists.spotify.TooManyRequestsExceptionHandler;
 
 public class SpotifyCatalogService implements MusicCatalogService {
 	
@@ -52,7 +55,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
     
     private static final int SEGMENT_SIZE = 50;
     
-    private final Map<String, SongFromCatalog> queryCache;
+    private final QueryCache queryCache;
 
     private final SpotifyApi spotifyApi;
     
@@ -68,29 +71,24 @@ public class SpotifyCatalogService implements MusicCatalogService {
         
         this.currentUser = getCurrentUser();
         
-        this.queryCache = deserializeOrCreateCache();
+        this.queryCache = new QueryCache();
+        LOGGER.info(String.format("Read %d cache entries from file", this.queryCache.size()));
     }
-
-    private HashMap<String, SongFromCatalog> deserializeOrCreateCache() {
-    	//TODO: implement caching
-		return new HashMap<>();
-	}
 
 	@Override
 	public Optional<SongFromCatalog> findSong(Song song) {
-    	try {
+	    try {
 	    	String query = makeQueryString(song);
-	    	if (queryCache.containsKey(query)) {
-	    		return Optional.ofNullable(queryCache.get(query));
-	    	} else {
-	    		Optional<SongFromCatalog> result = searchSpotifyForSong(song, query);
+	    	Optional<SongFromCatalog> result = queryCache.getFromCache(query);
+	    	if (!result.isPresent()) {
+	    		result = searchSpotifyForSong(song, query);
 	    		//do not cache nulls when song is not found on spotify, since I am trying to improve my search query
-	    		result.ifPresent(spotifySong ->  queryCache.put(query, spotifySong));
+	    		result.ifPresent(spotifySong ->  queryCache.cache(query, spotifySong));
 	    		if (LOGGER.isDebugEnabled() && !result.isPresent()) {
 	    			LOGGER.debug(String.format("Found=%b: %s with q='%s'", result.isPresent(), song, query));
 	    		}
-	    		return result;
 			}
+	    	return result;
     	} catch (SpotifyWebApiException | IOException e) {
     		throw new RuntimeException(e);
     	}
@@ -107,30 +105,18 @@ public class SpotifyCatalogService implements MusicCatalogService {
     }
     
     private Paging<Track> executeSearchOnSpotify(String queryString) throws SpotifyWebApiException, IOException {
-    	int attempt = 0;
 		SearchTracksRequest searchRequest = spotifyApi.searchTracks(queryString).build();
 		Paging<Track> searchResult = null;
 		while (searchResult == null) {
 			try {
 				searchResult = searchRequest.execute();
 			} catch (TooManyRequestsException e) {
-				attempt++;
-				if (attempt > 2 ) {
-					throw new RuntimeException(e);
-				}
-				int sleepSecs = e.getRetryAfter() + 1;
-				LOGGER.warn(String.format("SearchTracksRequest: API Rate limit exceeded. Going to sleep for %d seconds", sleepSecs));
-				try {
-					Thread.sleep(sleepSecs * 1000L);
-				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-				}
-				LOGGER.warn("Waking up and going on");
+				TooManyRequestsExceptionHandler.handle(LOGGER, searchRequest.getClass().getSimpleName(), e);
 			}
 		}
 		return searchResult;
     }
-
+    
 	private Optional<SongFromCatalog> selectRightResult(Song song, Paging<Track> searchResult) {
 		//select track with highest popularity score
 		Track mostPopularTrack = null;
@@ -143,13 +129,13 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	}
 
 	@Override
-	public ChartsPlaylist getOrCreatePlaylist(String playlistName) {
-		return findPlaylistForYear(playlistName)
-				.orElseGet(() -> createPlaylistForYear(playlistName));
+	public CatalogPlaylist getOrCreatePlaylist(String playlistName) {
+		return findPlaylistWithName(playlistName)
+				.orElseGet(() -> createPlaylistWithName(playlistName));
 	}
 	
-	private Optional<ChartsPlaylist> findPlaylistForYear(String targetName) {
-		PlaylistIterator iterator = new PlaylistIterator(spotifyApi);
+	private Optional<CatalogPlaylist> findPlaylistWithName(String targetName) {
+		PlaylistIterator iterator = PlaylistIterator.create(spotifyApi);
 		while (iterator.hasNext()) {
 			PlaylistSimplified spotifyPlaylist = iterator.next();
 			LOGGER.info(String.format("Encountered playlist '%s'", spotifyPlaylist.getName()));
@@ -160,7 +146,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		return Optional.empty();
 	}
 	
-	private ChartsPlaylist createPlaylistForYear(String newPlaylistName) {
+	private CatalogPlaylist createPlaylistWithName(String newPlaylistName) {
 		CreatePlaylistRequest createRequest = spotifyApi.createPlaylist(currentUser.getId(), newPlaylistName).build();
 		try {
 			return makePlaylist(createRequest.execute());
@@ -169,12 +155,12 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		}
 	}
 
-	private ChartsPlaylist makePlaylist(PlaylistSimplified spotifyPlaylist) {
-		return new ChartsPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
+	private CatalogPlaylist makePlaylist(PlaylistSimplified spotifyPlaylist) {
+		return new CatalogPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
 	}
 
-	private ChartsPlaylist makePlaylist(Playlist spotifyPlaylist) {
-		return new ChartsPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
+	private CatalogPlaylist makePlaylist(Playlist spotifyPlaylist) {
+		return new CatalogPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
 	}
 
 	private SongFromCatalog makeSongFromCatalog(Song song, Track spotifyTrack) {
@@ -182,13 +168,13 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	}
 
 	@Override
-	public void addToPlaylist(ChartsPlaylist playlist, List<SongFromCatalog> songs) {
+	public void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs) {
 		List<String> trackIds = songs.stream().map(song -> song.trackUri).collect(Collectors.toList());
 		
 		//spotify accepts max. 100 songs in a single request
 		int nrOfSegments = (trackIds.size() / SEGMENT_SIZE) + ((trackIds.size() % SEGMENT_SIZE)==0 ? 0 : 1);
 		int currentSegment = 1;
-		String playlistId = playlist.catalogProviderId;
+		String playlistId = playlist.playlistId;
 		try {
 			while (currentSegment <= nrOfSegments) {
 				int toIndex = currentSegment * SEGMENT_SIZE;
@@ -205,31 +191,17 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	}
 	
     private SnapshotResult addToPlaylistOnSpotify(String playlistId, String[] trackIds) throws SpotifyWebApiException, IOException {
-    	int attempt = 0;
 		AddTracksToPlaylistRequest request = spotifyApi.addTracksToPlaylist(currentUser.getId(),playlistId, trackIds).build();
 		SnapshotResult response = null;
 		while (response == null) {
 			try {
 				response = request.execute();
 			} catch (TooManyRequestsException e) {
-				attempt++;
-				if (attempt > 2 ) {
-					throw new RuntimeException(e);
-				}
-				int sleepSecs = e.getRetryAfter() + 1;
-				LOGGER.warn(String.format("AddTracksToPlaylistRequest: API Rate limit exceeded. Going to sleep for %d seconds", sleepSecs));
-				try {
-					Thread.sleep(sleepSecs * 1000L);
-				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-				}
-				LOGGER.warn("Waking up and going on");
+				TooManyRequestsExceptionHandler.handle(LOGGER, request.getClass().getSimpleName(), e);
 			}
 		}
 		return response;
     }
-
-
 	
 	private User getCurrentUser() {
 		GetCurrentUsersProfileRequest userRequest = spotifyApi.getCurrentUsersProfile().build();
@@ -240,8 +212,19 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		}
 	}
 
+	@Override
+	public Set<String> getTrackUrisInPlaylist(CatalogPlaylist playlist) {
+		PlaylistTrackIterator trackIterator = PlaylistTrackIterator.create(spotifyApi, currentUser.getId(), playlist.playlistId);
+		Set<String> trackUris = new HashSet<>(trackIterator.getSize());
+		while(trackIterator.hasNext()) {
+			trackUris.add(trackIterator.next().getTrack().getUri());
+		}
+		return trackUris;
+	}
+
 	public void close() {
-		LOGGER.info(String.format("I could write out the memory cache of %d entries to file now...", this.queryCache.size()));
+		LOGGER.info(String.format("Write out the memory cache of %d entries to file now...", this.queryCache.size()));
+		queryCache.writeCache();
 	}
 
 }

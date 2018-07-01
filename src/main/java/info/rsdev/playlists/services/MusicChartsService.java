@@ -29,6 +29,9 @@ import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.domain.Song;
 
+/**
+ * This implementation of a {@link MusicTitleService} 
+ */
 public class MusicChartsService implements MusicTitleService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MusicChartsService.class);

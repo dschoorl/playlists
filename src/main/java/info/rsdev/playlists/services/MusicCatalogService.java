@@ -17,17 +17,25 @@ package info.rsdev.playlists.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import info.rsdev.playlists.domain.ChartsPlaylist;
+import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.domain.SongFromCatalog;
 
+/**
+ * Interact with a internet music service where we can create and populate playlists containing the songs we like
+ * 
+ * @author Dave Schoorl
+ */
 public interface MusicCatalogService {
 	
 	Optional<SongFromCatalog> findSong(Song song);
 	
-	ChartsPlaylist getOrCreatePlaylist(String playlistName);
+	CatalogPlaylist getOrCreatePlaylist(String playlistName);
 	
-	void addToPlaylist(ChartsPlaylist playlist, List<SongFromCatalog> songs);
+	void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs);
+	
+	Set<String> getTrackUrisInPlaylist(CatalogPlaylist playlist);
 
 }

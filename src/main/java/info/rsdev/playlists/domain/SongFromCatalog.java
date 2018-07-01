@@ -15,8 +15,19 @@
  */
 package info.rsdev.playlists.domain;
 
-public class SongFromCatalog {
+import java.io.Serializable;
 
+import info.rsdev.playlists.services.MusicCatalogService;
+
+/**
+ * This DTO represents a {@link Song} available in a {@link MusicCatalogService}
+ * 
+ * @author Dave Schoorl
+ */
+public class SongFromCatalog implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
     public final Song song;
     public final String trackUri;
 

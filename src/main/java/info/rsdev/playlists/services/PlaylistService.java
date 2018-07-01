@@ -18,43 +18,53 @@ package info.rsdev.playlists.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.rsdev.playlists.domain.ChartsPlaylist;
+import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.domain.SongFromCatalog;
 
+/**
+ * This service is responsible for creating and updating a playlist hosted at a given {@link MusicCatalogService}
+ * 
+ * @author Dave Schoorl
+ */
 public class PlaylistService {
-	
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PlaylistService.class);
 
-    @Inject 
+    @Inject
     private MusicCatalogService catalogService;
-    
-	public void makePlaylistWithSongs(String playlistName, List<Song> songs) {
-		
-		ChartsPlaylist playlist = catalogService.getOrCreatePlaylist(playlistName);
-		List<SongFromCatalog> songsFromCatalog = new ArrayList<>(songs.size());
-		int notFound = 0;
+
+    public void fillPlaylistWithSongs(String playlistName, List<Song> songs) {
+        CatalogPlaylist playlist = catalogService.getOrCreatePlaylist(playlistName);
+        Set<String> currentTrackIds = catalogService.getTrackUrisInPlaylist(playlist);
+        List<SongFromCatalog> songsToAddToPlaylist = new ArrayList<>(songs.size());
+        int notFound = 0;
         for (Song song : songs) {
-        	Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
-        	if (!catalogSong.isPresent()) {
-        		LOGGER.info(String.format("%s - %s", song, catalogSong.map(item -> item.trackUri).orElse("Not found")));
-        		notFound++;
-        	}
-        	
-        	catalogSong.ifPresent(fromCatalog -> songsFromCatalog.add(fromCatalog));
+            Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
+            if (!catalogSong.isPresent()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(String.format("%s - %s", song, catalogSong.map(item -> item.trackUri).orElse("Not found")));
+                }
+                notFound++;
+            }
+
+            catalogSong.filter(songFromCatalog -> !currentTrackIds.contains(songFromCatalog.trackUri))
+                    .ifPresent(fromCatalog -> songsToAddToPlaylist.add(fromCatalog));
         }
-        
+
         if (notFound > 0) {
-        	LOGGER.warn("Total # not found on spotify: " + notFound);
+            LOGGER.warn("Total # not found on spotify: " + notFound);
         }
-        
-        catalogService.addToPlaylist(playlist, songsFromCatalog);
-	}
-	
+
+        catalogService.addToPlaylist(playlist, songsToAddToPlaylist);
+        LOGGER.info(String.format("Added %d songs to playlist %s", songsToAddToPlaylist.size(), playlist.name));
+    }
+
 }

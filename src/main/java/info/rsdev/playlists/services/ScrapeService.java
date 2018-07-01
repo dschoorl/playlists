@@ -20,8 +20,16 @@ import java.util.Optional;
 
 import info.rsdev.playlists.domain.ChartsItem;
 
+/**
+ * This service is responsible for scraping a web page containing music charts for a single period, most often a week.
+ */
 public interface ScrapeService {
 
+    /**
+     * Transform the html that is retrieved via the {@link DocumentFetcher} into a list of {@link ChartsItem}s
+     * @param fetcher the {@link DocumentFetcher} pointing at a html source
+     * @return the {@link ChartsItem}s that are listed in the html
+     */
     List<ChartsItem> scrape(DocumentFetcher fetcher);
     
     List<MusicChart> getSupportedCharts();

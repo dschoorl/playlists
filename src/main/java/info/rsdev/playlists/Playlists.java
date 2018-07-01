@@ -59,9 +59,9 @@ public class Playlists {
     	long startTime = System.currentTimeMillis();
         titleService.init();
         
-        short year = 2001;
+        short year = 2017;
         List<Song> chartedSongs = titleService.getChartedSongsForYear(year);
-        playlistService.makePlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
+        playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
         
         LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime)/1000));
     }

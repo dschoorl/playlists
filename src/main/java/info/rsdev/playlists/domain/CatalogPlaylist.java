@@ -15,15 +15,24 @@
  */
 package info.rsdev.playlists.domain;
 
-public class ChartsPlaylist {
+import info.rsdev.playlists.services.MusicCatalogService;
+
+/**
+ * This class represents a playlist at the {@link MusicCatalogService}
+ * @author Dave Schoorl
+ */
+public class CatalogPlaylist {
 	
 	public final String name;
 	
-	public final String catalogProviderId;
+	/**
+	 * The identifier of the playlist at the {@link MusicCatalogService}
+	 */
+	public final String playlistId;
 
-	public ChartsPlaylist(String name, String catalogProviderId) {
+	public CatalogPlaylist(String name, String catalogProviderId) {
 		this.name = name;
-		this.catalogProviderId = catalogProviderId;
+		this.playlistId = catalogProviderId;
 	}
 	
 }

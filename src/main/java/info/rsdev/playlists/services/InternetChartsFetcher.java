@@ -22,6 +22,10 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+/**
+ * This implementation of a {@link DocumentFetcher} knows how to read the html from the top40.nl web site and how to process
+ * the {@link MusicChart}s that are hosted there.
+ */
 public class InternetChartsFetcher implements DocumentFetcher {
 
     private static final String USERAGENT_STRING = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0";

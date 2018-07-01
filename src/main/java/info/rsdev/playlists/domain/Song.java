@@ -15,7 +15,11 @@
  */
 package info.rsdev.playlists.domain;
 
-public class Song implements Comparable<Song> {
+import java.io.Serializable;
+
+public class Song implements Serializable, Comparable<Song> {
+
+    private static final long serialVersionUID = 1L;
 
     public final String artist;
 

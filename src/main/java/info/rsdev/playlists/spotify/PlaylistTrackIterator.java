@@ -20,27 +20,33 @@ import java.io.IOException;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.Paging;
-import com.wrapper.spotify.model_objects.specification.PlaylistSimplified;
-import com.wrapper.spotify.requests.data.playlists.GetListOfCurrentUsersPlaylistsRequest;
+import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
+import com.wrapper.spotify.requests.data.playlists.GetPlaylistsTracksRequest;
 
-public class PlaylistIterator extends BasePagingIterator<PlaylistSimplified> {
+public class PlaylistTrackIterator extends BasePagingIterator<PlaylistTrack> {
 	
-	private PlaylistIterator(SpotifyApi spotifyApi) {
+	private final String userId;
+	
+	private final String playlistId;
+	
+	private PlaylistTrackIterator(SpotifyApi spotifyApi, String userId, String playlistId) {
 		super(spotifyApi);
+		this.userId = userId;
+		this.playlistId = playlistId;
 	}
 	
-	protected Paging<PlaylistSimplified> getResults(int offset) {
-		GetListOfCurrentUsersPlaylistsRequest request = getSpotifyApi().getListOfCurrentUsersPlaylists().offset(offset).build();
+	protected Paging<PlaylistTrack> getResults(int offset) {
+		GetPlaylistsTracksRequest request = getSpotifyApi().getPlaylistsTracks(userId, playlistId).offset(offset).build();
 		try {
 			return request.execute();
 		} catch (SpotifyWebApiException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public static PlaylistIterator create(SpotifyApi spotifyApi) {
-	    PlaylistIterator newInstance = new PlaylistIterator(spotifyApi);
-	    newInstance.initialize();
-	    return newInstance;
-	}
+
+    public static PlaylistTrackIterator create(SpotifyApi spotifyApi, String userId, String playlistId) {
+        PlaylistTrackIterator newInstance = new PlaylistTrackIterator(spotifyApi, userId, playlistId);
+        newInstance.initialize();
+        return newInstance;
+    }
 }

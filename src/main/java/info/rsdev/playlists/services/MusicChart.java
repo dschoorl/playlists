@@ -15,6 +15,9 @@
  */
 package info.rsdev.playlists.services;
 
+/**
+ * An enumeration of music charts that is understood by this software
+ */
 public enum MusicChart { 
 
     TOP40("Top 40", (short)1965, (byte)1),

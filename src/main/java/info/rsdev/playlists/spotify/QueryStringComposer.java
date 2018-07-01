@@ -36,7 +36,8 @@ public class QueryStringComposer {
 		ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "with", "and", "x", "+", "vs", "vs."));
 		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-"));
 		
-		ARTIST_ALIASSES.put("ATC", "A Touch Of Class");
+		ARTIST_ALIASSES.put("atc", "a touch of class");
+		ARTIST_ALIASSES.put("beegees", "bee gees");
 	}
 	
 	public static String makeQueryString(Song song) throws UnsupportedEncodingException {
