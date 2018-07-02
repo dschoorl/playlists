@@ -33,8 +33,8 @@ public class QueryStringComposer {
 	private static final Map<String, String> ARTIST_ALIASSES = new HashMap<>();
 	static {
 		//all entries must be lower case
-		ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "with", "and", "x", "+", "vs", "vs."));
-		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-"));
+		ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x", "+", "vs", "vs."));
+		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-", "radio", "edit"));
 		
 		ARTIST_ALIASSES.put("atc", "a touch of class");
 		ARTIST_ALIASSES.put("beegees", "bee gees");

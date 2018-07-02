@@ -18,10 +18,11 @@ package info.rsdev.playlists.services;
 import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -167,6 +168,15 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		return new SongFromCatalog(song, spotifyTrack.getUri());
 	}
 
+    private SongFromCatalog makeSongFromCatalog(Track spotifyTrack) {
+        String artists = Arrays.asList(spotifyTrack.getArtists()).stream()
+            .map(artist -> artist.getName())
+            .collect(Collectors.joining(" "));
+        
+        Song song = new Song(artists, spotifyTrack.getName());
+        return new SongFromCatalog(song, spotifyTrack.getUri());
+    }
+
 	@Override
 	public void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs) {
 		List<String> trackIds = songs.stream().map(song -> song.trackUri).collect(Collectors.toList());
@@ -213,13 +223,14 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	}
 
 	@Override
-	public Set<String> getTrackUrisInPlaylist(CatalogPlaylist playlist) {
+	public Set<SongFromCatalog> getTrackUrisInPlaylist(CatalogPlaylist playlist) {
 		PlaylistTrackIterator trackIterator = PlaylistTrackIterator.create(spotifyApi, currentUser.getId(), playlist.playlistId);
-		Set<String> trackUris = new HashSet<>(trackIterator.getSize());
+		Set<SongFromCatalog> songsFromCatalog = new TreeSet<>(SongFromCatalogComparator.INSTANCE);
 		while(trackIterator.hasNext()) {
-			trackUris.add(trackIterator.next().getTrack().getUri());
+		    Track track = trackIterator.next().getTrack();
+		    songsFromCatalog.add(makeSongFromCatalog(track));
 		}
-		return trackUris;
+		return songsFromCatalog;
 	}
 
 	public void close() {

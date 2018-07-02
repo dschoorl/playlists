@@ -36,6 +36,6 @@ public interface MusicCatalogService {
 	
 	void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs);
 	
-	Set<String> getTrackUrisInPlaylist(CatalogPlaylist playlist);
+	Set<SongFromCatalog> getTrackUrisInPlaylist(CatalogPlaylist playlist);
 
 }

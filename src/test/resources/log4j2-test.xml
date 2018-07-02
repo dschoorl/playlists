@@ -7,6 +7,7 @@
 	</Appenders>
 	<Loggers>
 		<Logger name="info.rsdev.playlists.services.Top40ScrapeService" level="DEBUG" />
+		<Logger name="info.rsdev.playlists.services.SongFromCatalogComparator" level="DEBUG" />
 		<Root level="ERROR">
 			<AppenderRef ref="Console" />
 		</Root>

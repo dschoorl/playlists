@@ -42,8 +42,11 @@ public class PlaylistService {
     private MusicCatalogService catalogService;
 
     public void fillPlaylistWithSongs(String playlistName, List<Song> songs) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.format("Searching for %d titles in playlist %s", songs.size(), playlistName));
+        }
         CatalogPlaylist playlist = catalogService.getOrCreatePlaylist(playlistName);
-        Set<String> currentTrackIds = catalogService.getTrackUrisInPlaylist(playlist);
+        Set<SongFromCatalog> currentTrackIds = catalogService.getTrackUrisInPlaylist(playlist);
         List<SongFromCatalog> songsToAddToPlaylist = new ArrayList<>(songs.size());
         int notFound = 0;
         for (Song song : songs) {
@@ -55,7 +58,7 @@ public class PlaylistService {
                 notFound++;
             }
 
-            catalogSong.filter(songFromCatalog -> !currentTrackIds.contains(songFromCatalog.trackUri))
+            catalogSong.filter(songFromCatalog -> !isTrackAlreadyInPlaylist(currentTrackIds, songFromCatalog))
                     .ifPresent(fromCatalog -> songsToAddToPlaylist.add(fromCatalog));
         }
 
@@ -65,6 +68,10 @@ public class PlaylistService {
 
         catalogService.addToPlaylist(playlist, songsToAddToPlaylist);
         LOGGER.info(String.format("Added %d songs to playlist %s", songsToAddToPlaylist.size(), playlist.name));
+    }
+    
+    private boolean isTrackAlreadyInPlaylist(Set<SongFromCatalog> currentTrackIds, SongFromCatalog targetSong) {
+        return currentTrackIds.contains(targetSong);
     }
 
 }

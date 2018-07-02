@@ -28,11 +28,11 @@ public class SongFromCatalog implements Serializable {
     
     private static final long serialVersionUID = 1L;
     
-    public final Song song;
     public final String trackUri;
+    public final Song song;
 
     public SongFromCatalog(Song song, String trackUri) {
-        this.song = song;
         this.trackUri = trackUri;
+        this.song = song;
     }
 }
