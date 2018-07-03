@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -88,9 +89,9 @@ public class QueryStringComposer {
 		return query;
 	}
 
-	private static Set<String> splitToLowercaseWords(String field) {
+	private static SortedSet<String> splitToLowercaseWords(String field) {
 		String[] words = field.toLowerCase().split("[\\s\\(\\)\\,\\&]");
-		Set<String> result = new TreeSet<>();	//apply alphabetic ordering to make unit testing easier
+		SortedSet<String> result = new TreeSet<>();	//apply alphabetic ordering to make unit testing easier
 		for (String word : words) {
 			if ((word != null) && !word.isEmpty()) {
 				result.add(word);

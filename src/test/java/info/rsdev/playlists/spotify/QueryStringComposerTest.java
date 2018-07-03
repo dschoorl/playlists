@@ -26,7 +26,7 @@ public class QueryStringComposerTest {
 	@Test
 	public void testFilterFeaturingFromArtistName() throws Exception {
 		String queryString = QueryStringComposer.makeQueryString(new Song("Jannus (featuring Marieke)", "The world is a beautiful thing"));
-		assertEquals("artist:jannus+marieke%20title:beautiful+is+thing+world", queryString);
+		assertEquals("artist:jannus marieke title:beautiful is thing world", queryString);
 	}
 
 }
