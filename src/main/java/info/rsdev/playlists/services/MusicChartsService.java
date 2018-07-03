@@ -59,6 +59,7 @@ public class MusicChartsService implements MusicTitleService {
     }
 
     private void loadData() {
+        //TODO: determine per chart which weeks are already loaded
     	short currentYear = (short)LocalDate.now().getYear();
         for (MusicChart chart : scrapeService.getSupportedCharts()) {
         	for (short year = chart.getYearStarted(); year <= currentYear; year++) {

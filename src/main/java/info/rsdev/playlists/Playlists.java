@@ -59,7 +59,7 @@ public class Playlists {
     	long startTime = System.currentTimeMillis();
         titleService.init();
         
-        short year = 2010;
+        short year = 2014;
         List<Song> chartedSongs = titleService.getChartedSongsForYear(year);
         playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
         

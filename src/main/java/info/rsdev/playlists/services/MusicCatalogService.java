@@ -15,9 +15,9 @@
  */
 package info.rsdev.playlists.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
@@ -36,6 +36,6 @@ public interface MusicCatalogService {
 	
 	void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs);
 	
-	Set<SongFromCatalog> getTrackUrisInPlaylist(CatalogPlaylist playlist);
+	Collection<SongFromCatalog> getTracksInPlaylist(CatalogPlaylist playlist);
 
 }

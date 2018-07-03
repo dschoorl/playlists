@@ -16,9 +16,11 @@
 package info.rsdev.playlists.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -46,20 +48,22 @@ public class PlaylistService {
             LOGGER.info(String.format("Searching for %d titles in playlist %s", songs.size(), playlistName));
         }
         CatalogPlaylist playlist = catalogService.getOrCreatePlaylist(playlistName);
-        Set<SongFromCatalog> currentTrackIds = catalogService.getTrackUrisInPlaylist(playlist);
+        Map<String, Song> playlistTracks = keySongsByTrackUri(catalogService.getTracksInPlaylist(playlist));
         List<SongFromCatalog> songsToAddToPlaylist = new ArrayList<>(songs.size());
         int notFound = 0;
         for (Song song : songs) {
-            Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
-            if (!catalogSong.isPresent()) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format("%s - %s", song, catalogSong.map(item -> item.trackUri).orElse("Not found")));
+            if (isMissingInPlaylist(playlistTracks.values(), song)) {
+                Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
+                if (!catalogSong.isPresent()) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(String.format("%s - %s", song, catalogSong.map(item -> item.trackUri).orElse("Not found")));
+                    }
+                    notFound++;
                 }
-                notFound++;
-            }
-
-            catalogSong.filter(songFromCatalog -> !isTrackAlreadyInPlaylist(currentTrackIds, songFromCatalog))
+                
+                catalogSong.filter(songFromCatalog -> !playlistTracks.containsKey(songFromCatalog.trackUri))
                     .ifPresent(fromCatalog -> songsToAddToPlaylist.add(fromCatalog));
+            }
         }
 
         if (notFound > 0) {
@@ -70,8 +74,19 @@ public class PlaylistService {
         LOGGER.info(String.format("Added %d songs to playlist %s", songsToAddToPlaylist.size(), playlist.name));
     }
     
-    private boolean isTrackAlreadyInPlaylist(Set<SongFromCatalog> currentTrackIds, SongFromCatalog targetSong) {
-        return currentTrackIds.contains(targetSong);
+    private boolean isMissingInPlaylist(Collection<Song> playlistTracks, Song targetSong) {
+        for (Song candidate : playlistTracks) {
+            if (SongComparator.INSTANCE.compare(candidate, targetSong) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private Map<String, Song> keySongsByTrackUri(Collection<SongFromCatalog> songs) {
+        Map<String, Song> songsByTrackUri = new HashMap<>(songs.size());
+        songs.forEach(song -> songsByTrackUri.put(song.trackUri, song.song));
+        return songsByTrackUri;
     }
 
 }

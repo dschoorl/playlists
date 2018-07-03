@@ -34,27 +34,35 @@ public class QueryStringComposer {
 	static {
 		//all entries must be lower case
 		ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x", "+", "vs", "vs."));
-		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-", "radio", "edit"));
+		TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-", "radio", "edit", "mix", "single"));
 		
 		ARTIST_ALIASSES.put("atc", "a touch of class");
 		ARTIST_ALIASSES.put("beegees", "bee gees");
 	}
 	
+	public static Set<String> normalizeArtist(Song song) {
+        Set<String> artistWords = splitToLowercaseWords(song.artist);
+        artistWords.removeAll(ARTIST_NOISE_WORDS);
+        artistWords = artistWords.stream().map(QueryStringComposer::replaceAliasses).collect(Collectors.toSet());
+        return artistWords;
+	}
+	
+    public static Set<String> normalizeTitle(Song song) {
+        String title = chooseOneWhenThereIsDoubleASide(song.title);
+        Set<String> titleWords = splitToLowercaseWords(title);
+        titleWords.removeAll(TITLE_NOISE_WORDS);
+        return titleWords;
+    }
+    
 	public static String makeQueryString(Song song) throws UnsupportedEncodingException {
-		String title = chooseOneWhenThereIsDoubleASide(song.title);
-		Set<String> titleWords = splitToLowercaseWords(title);
-		titleWords.removeAll(TITLE_NOISE_WORDS);
-		
-		Set<String> artistWords = splitToLowercaseWords(song.artist);
-		artistWords.removeAll(ARTIST_NOISE_WORDS);
-		artistWords = artistWords.stream().map(QueryStringComposer::replaceAliasses).collect(Collectors.toSet());
-		
+	    Set<String> titleWords = normalizeTitle(song);
+	    Set<String> artistWords = normalizeArtist(song);
 		StringBuilder query = new StringBuilder();
-		appendField(query, "artist", artistWords);
+		appendSearchField(query, "artist", artistWords);
 		if (!artistWords.isEmpty()) {
 			query.append(" ");
 		}
-		appendField(query, "title", titleWords);
+		appendSearchField(query, "title", titleWords);
 		return query.toString();
 	}
 	
@@ -72,7 +80,7 @@ public class QueryStringComposer {
 		return word;
 	}
 	
-	private static StringBuilder appendField(StringBuilder query, String fieldName, Set<String> words) throws UnsupportedEncodingException {
+	private static StringBuilder appendSearchField(StringBuilder query, String fieldName, Set<String> words) throws UnsupportedEncodingException {
 		if (!words.isEmpty()) {
 			query.append(fieldName).append(":");
 			query.append(words.stream().collect(Collectors.joining(" ")));

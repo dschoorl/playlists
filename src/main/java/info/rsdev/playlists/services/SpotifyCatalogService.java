@@ -18,11 +18,11 @@ package info.rsdev.playlists.services;
 import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -223,9 +223,9 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	}
 
 	@Override
-	public Set<SongFromCatalog> getTrackUrisInPlaylist(CatalogPlaylist playlist) {
+	public Collection<SongFromCatalog> getTracksInPlaylist(CatalogPlaylist playlist) {
 		PlaylistTrackIterator trackIterator = PlaylistTrackIterator.create(spotifyApi, currentUser.getId(), playlist.playlistId);
-		Set<SongFromCatalog> songsFromCatalog = new TreeSet<>(SongFromCatalogComparator.INSTANCE);
+		List<SongFromCatalog> songsFromCatalog = new ArrayList<>(trackIterator.getSize());
 		while(trackIterator.hasNext()) {
 		    Track track = trackIterator.next().getTrack();
 		    songsFromCatalog.add(makeSongFromCatalog(track));
