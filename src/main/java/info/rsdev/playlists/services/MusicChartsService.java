@@ -49,13 +49,16 @@ public class MusicChartsService implements MusicTitleService {
     @Override
     public void init() {
         if (chartsItemDao.setupStoreWhenNeeded()) {
-            loadData();
+            LOGGER.info("New datastore created succesfully");
         }
-        short maxYear = chartsItemDao.getHighestYearStored(MusicChart.TOP40);
-        if (maxYear >= 0) {
-            byte maxWeek = chartsItemDao.getHighestWeekStored(MusicChart.TOP40, maxYear);
-            LOGGER.warn(String.format("Containing data from %d, week %d", maxYear, maxWeek));
+        for (MusicChart chart : MusicChart.values()) {
+            short maxYear = chartsItemDao.getHighestYearStored(chart);
+            if (maxYear >= 0) {
+                byte maxWeek = chartsItemDao.getHighestWeekStored(chart, maxYear);
+                LOGGER.warn(String.format("Datastore contains data for %s from %d, week %d", chart, maxYear, maxWeek));
+            }
         }
+        loadData();
     }
     
     @Override
@@ -64,10 +67,9 @@ public class MusicChartsService implements MusicTitleService {
     }
 
     private void loadData() {
-        //TODO: determine per chart which weeks are already loaded
     	short currentYear = (short)LocalDate.now().getYear();
         for (MusicChart chart : scrapeService.getSupportedCharts()) {
-        	for (short year = chart.getYearStarted(); year <= currentYear; year++) {
+        	for (short year = getFirstYearToScrape(chart); year <= currentYear; year++) {
 	            for (byte weekNumber = firstWeek(chart, year); weekNumber <= lastWeek(currentYear, year); weekNumber++) {
 	                List<ChartsItem> chartsItems = scrapeService.scrape(newInternetDocumentFetcher(chart, year, weekNumber));
 	                chartsItems.forEach(chartsItemDao::saveOrUpdate);
@@ -78,7 +80,19 @@ public class MusicChartsService implements MusicTitleService {
         }
     }
     
+    private short getFirstYearToScrape(MusicChart chart) {
+        short highestYearStoredCharts = chartsItemDao.getHighestYearStored(chart);
+        if (highestYearStoredCharts >= 0) {
+            return highestYearStoredCharts;
+        }
+        return chart.getYearStarted();
+    }
+    
     private byte firstWeek(MusicChart chart, short year) {
+        byte highestWeekStoredForYear = chartsItemDao.getHighestWeekStored(chart, year);
+        if (highestWeekStoredForYear >= 0) {
+            return highestWeekStoredForYear;
+        }
     	if (chart.getYearStarted() == year) {
     		return chart.getWeekStarted();
     	}

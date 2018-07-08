@@ -58,12 +58,13 @@ public class Playlists {
     private void start(String[] args) {
     	long startTime = System.currentTimeMillis();
         titleService.init();
+        LOGGER.info(String.format("Datastore initialized after %ds", (System.currentTimeMillis() - startTime)/1000));
         
-//        short year = 2014;
-//        List<Song> chartedSongs = titleService.getChartedSongsForYear(year);
-//        playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
-//        
-//        LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime)/1000));
+        short year = 2018;
+        List<Song> chartedSongs = titleService.getChartedSongsForYear(year);
+        playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
+        
+        LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime)/1000));
     }
 
 }
