@@ -51,6 +51,11 @@ public class MusicChartsService implements MusicTitleService {
         if (chartsItemDao.setupStoreWhenNeeded()) {
             loadData();
         }
+        short maxYear = chartsItemDao.getHighestYearStored(MusicChart.TOP40);
+        if (maxYear >= 0) {
+            byte maxWeek = chartsItemDao.getHighestWeekStored(MusicChart.TOP40, maxYear);
+            LOGGER.warn(String.format("Containing data from %d, week %d", maxYear, maxWeek));
+        }
     }
     
     @Override

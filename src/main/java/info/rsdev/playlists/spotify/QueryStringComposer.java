@@ -28,33 +28,35 @@ import java.util.stream.Collectors;
 import info.rsdev.playlists.domain.Song;
 
 public class QueryStringComposer {
-    
+
     private static final Set<String> ARTIST_NOISE_WORDS = new HashSet<>();
     private static final Set<String> TITLE_NOISE_WORDS = new HashSet<>();
     private static final Map<String, String> ARTIST_ALIASSES = new HashMap<>();
     static {
-        //all entries must be lower case
-        ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x", "+", "vs", "vs."));
+        // all entries must be lower case
+        ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x", 
+                "+", "vs", "vs."));
         TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-", "radio", "edit", "mix", "single"));
-        
+
         ARTIST_ALIASSES.put("atc", "a touch of class");
         ARTIST_ALIASSES.put("beegees", "bee gees");
     }
-    
+
     public static SortedSet<String> normalizeArtist(Song song) {
         SortedSet<String> artistWords = splitToLowercaseWords(song.artist);
         artistWords.removeAll(ARTIST_NOISE_WORDS);
-        artistWords = artistWords.stream().map(QueryStringComposer::replaceAliasses).collect(Collectors.toCollection(() -> new TreeSet<>()));
+        artistWords = artistWords.stream().map(QueryStringComposer::replaceAliasses)
+                .collect(Collectors.toCollection(() -> new TreeSet<>()));
         return artistWords;
     }
-    
+
     public static SortedSet<String> normalizeTitle(Song song) {
         String title = chooseOneWhenThereIsDoubleASide(song.title);
         SortedSet<String> titleWords = splitToLowercaseWords(title);
         titleWords.removeAll(TITLE_NOISE_WORDS);
         return titleWords;
     }
-    
+
     public static String makeQueryString(Song song) throws UnsupportedEncodingException {
         SortedSet<String> titleWords = normalizeTitle(song);
         SortedSet<String> artistWords = normalizeArtist(song);
@@ -66,7 +68,7 @@ public class QueryStringComposer {
         appendSearchField(query, "title", titleWords);
         return query.toString();
     }
-    
+
     private static String chooseOneWhenThereIsDoubleASide(String title) {
         if (title.contains("/")) {
             return title.substring(0, title.indexOf("/"));
@@ -80,8 +82,9 @@ public class QueryStringComposer {
         }
         return word;
     }
-    
-    private static StringBuilder appendSearchField(StringBuilder query, String fieldName, SortedSet<String> words) throws UnsupportedEncodingException {
+
+    private static StringBuilder appendSearchField(StringBuilder query, String fieldName, SortedSet<String> words)
+            throws UnsupportedEncodingException {
         if (!words.isEmpty()) {
             query.append(fieldName).append(":");
             query.append(words.stream().collect(Collectors.joining(" ")));
@@ -91,7 +94,7 @@ public class QueryStringComposer {
 
     private static SortedSet<String> splitToLowercaseWords(String field) {
         String[] words = field.toLowerCase().split("[\\s\\(\\)\\,\\&]");
-        SortedSet<String> result = new TreeSet<>(); //apply alphabetic ordering to make unit testing easier
+        SortedSet<String> result = new TreeSet<>(); // apply alphabetic ordering to make unit testing easier
         for (String word : words) {
             if ((word != null) && !word.isEmpty()) {
                 result.add(word);
@@ -99,5 +102,5 @@ public class QueryStringComposer {
         }
         return result;
     }
-    
+
 }

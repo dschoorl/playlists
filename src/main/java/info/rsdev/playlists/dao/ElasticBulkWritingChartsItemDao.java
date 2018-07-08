@@ -44,12 +44,15 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.services.MusicChart;
 
 public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
 
@@ -243,8 +246,8 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         searchSourceBuilder.storedFields(Arrays.asList(ARTIST, TITLE));
         searchSourceBuilder.fetchSource(true);
         BoolQueryBuilder filterQuery = QueryBuilders.boolQuery()
-        		.filter(QueryBuilders.termQuery("isNewRelease", true))
-        		.filter(QueryBuilders.rangeQuery("year")
+        		.filter(QueryBuilders.termQuery(IS_NEW_IN_CHART, true))
+        		.filter(QueryBuilders.rangeQuery(YEAR)
         				.gte(year)
         				.lte(year)
         		);
@@ -252,5 +255,65 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         searchRequest.source(searchSourceBuilder);
         return searchRequest;
 	}
+
+    @Override
+    public short getHighestYearStored(MusicChart chart) {
+        SearchRequest searchRequest = new SearchRequest(CHARTSITEM_INDEX_NAME);
+        searchRequest.types(CHARTSITEM_DOCTYPE);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.storedFields(Arrays.asList(CHARTNAME, YEAR));
+        searchSourceBuilder.size(0);
+        searchSourceBuilder.fetchSource(false);
+        BoolQueryBuilder filterQuery = QueryBuilders.boolQuery()
+                .filter(QueryBuilders.termQuery(CHARTNAME, chart.getName()));
+        searchSourceBuilder.query(filterQuery);
+        
+        searchSourceBuilder.aggregation(AggregationBuilders.max("maxYear").field(YEAR));
+        searchRequest.source(searchSourceBuilder);
+        
+        try {
+            SearchResponse searchResponse = elasticsearchClient.search(searchRequest);
+            ParsedMax result = searchResponse.getAggregations().get("maxYear");
+            if (Double.isInfinite(result.getValue())) {
+                return -1;
+            } else {
+                return (short)result.getValue();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public byte getHighestWeekStored(MusicChart chart, short year) {
+        SearchRequest searchRequest = new SearchRequest(CHARTSITEM_INDEX_NAME);
+        searchRequest.types(CHARTSITEM_DOCTYPE);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.storedFields(Arrays.asList(CHARTNAME, YEAR, WEEK));
+        searchSourceBuilder.size(0);
+        searchSourceBuilder.fetchSource(false);
+        BoolQueryBuilder filterQuery = QueryBuilders.boolQuery()
+                .filter(QueryBuilders.termQuery(CHARTNAME, chart.getName()))
+                .filter(QueryBuilders.rangeQuery(YEAR)
+                        .gte(year)
+                        .lte(year)
+                );
+        searchSourceBuilder.query(filterQuery);
+        
+        searchSourceBuilder.aggregation(AggregationBuilders.max("maxWeek").field(WEEK));
+        searchRequest.source(searchSourceBuilder);
+        
+        try {
+            SearchResponse searchResponse = elasticsearchClient.search(searchRequest);
+            ParsedMax result = searchResponse.getAggregations().get("maxWeek");
+            if (Double.isInfinite(result.getValue())) {
+                return -1;
+            } else {
+                return (byte)result.getValue();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
