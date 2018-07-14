@@ -7,7 +7,7 @@
     </Appenders>
     <Loggers>
     	<Logger name="info.rsdev.playlists.services" level="WARN" />
-<!-- 		<Logger name="info.rsdev.playlists.services.SongFromCatalogComparator" level="DEBUG" /> -->
+        <Logger name="info.rsdev.playlists.services.Top40ScrapeService" level="INFO" />
     	<Logger name="info.rsdev.playlists.services.SpotifyCatalogService" level="DEBUG" />
     	<Logger name="info.rsdev.playlists.Playlists" level="INFO" />
     	<Logger name="info.rsdev.playlists.services.PlaylistService" level="INFO" />

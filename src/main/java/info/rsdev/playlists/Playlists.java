@@ -60,7 +60,9 @@ public class Playlists {
         titleService.init();
         LOGGER.info(String.format("Datastore initialized after %ds", (System.currentTimeMillis() - startTime)/1000));
         
+        //Change the value of 'year' below to select the year for which you want to create a playlist
         short year = 2018;
+        
         List<Song> chartedSongs = titleService.getChartedSongsForYear(year);
         playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
         

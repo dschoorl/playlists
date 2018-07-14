@@ -15,6 +15,8 @@
  */
 package info.rsdev.playlists.ioc;
 
+import java.net.URLEncoder;
+
 import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
 import com.wrapper.spotify.exceptions.detailed.UnauthorizedException;
 
@@ -60,7 +63,10 @@ public class SpringCommonConfig {
         String clientId = env.getRequiredProperty("spotify.clientId");
         String clientSecret = env.getRequiredProperty("spotify.clientSecret");
         String accessToken = env.getProperty("spotify.accessToken");
-        String refreshToken = env.getProperty("spotify.refreshToken");
+        if (StringUtils.isEmpty(accessToken)) {
+            throw new RuntimeException(getAccessTokenUrlMessage());
+        }
+        String refreshToken = env.getProperty("spotify.refreshToken");  //currently not supported / needed
         SpotifyCatalogService catalogService = null;
         try {
         	catalogService = new SpotifyCatalogService(clientId, clientSecret, accessToken, refreshToken);
@@ -72,13 +78,18 @@ public class SpringCommonConfig {
 
 	private void handleRuntimeException(RuntimeException e) {
 		if (e.getCause() instanceof UnauthorizedException) {
-	        String clientId = env.getRequiredProperty("spotify.clientId");
-        	String message = String.format("Get your access- and refreshToken through your web browser at:%nhttps://accounts.spotify.com/authorize" +
-        			"?response_type=token&client_id=%s&redirect_uri=https%%3A%%2F%%2Frsdev.info&scope=playlist-read-private%%20playlist-modify-private%%20playlist-modify%n", clientId);
-//        	byte[] basicAuth = (clientId + ":" + clientSecret).getBytes();
-//        	message += String.format("Use Authorization header with value: %s", Base64.getEncoder().encodeToString(basicAuth));
-        	throw new IllegalStateException(message, e);
+        	throw new IllegalStateException(getAccessTokenUrlMessage(), e);
 		}
 		throw e;
+	}
+	
+	@SuppressWarnings("deprecation")
+    private String getAccessTokenUrlMessage() {
+        String clientId = env.getRequiredProperty("spotify.clientId");
+        String redirectUrl = URLEncoder.encode(env.getRequiredProperty("spotify.redirectUrl"));
+        String message = String.format("Get your accessToken through your web browser at:%n"
+                + "https://accounts.spotify.com/authorize" +
+                "?response_type=token&client_id=%s&redirect_uri=%s&scope=playlist-read-private%%20playlist-modify-private%%20playlist-modify%n", clientId, redirectUrl);
+        return message;
 	}
 }
