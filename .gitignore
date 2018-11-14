@@ -1,6 +1,7 @@
 # ignore eclipse related files and directories
 .classpath
 .project
+.factorypath
 .settings
 bin
 

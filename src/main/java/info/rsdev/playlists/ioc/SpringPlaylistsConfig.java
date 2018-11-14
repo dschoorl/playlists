@@ -19,7 +19,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import info.rsdev.playlists.Playlists;
 import info.rsdev.playlists.services.PlaylistService;
 
 /**
@@ -30,11 +29,6 @@ import info.rsdev.playlists.services.PlaylistService;
 @Import({SpringCommonConfig.class})
 public class SpringPlaylistsConfig {
 
-    @Bean
-    public Playlists playlist() {
-        return new Playlists();
-    }
-    
     @Bean PlaylistService playlistService() {
     	return new PlaylistService();
     }
