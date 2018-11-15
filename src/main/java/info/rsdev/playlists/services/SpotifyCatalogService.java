@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.domain.SongFromCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,6 @@ import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
 
-import info.rsdev.playlists.domain.SongFromCatalog;
 import info.rsdev.playlists.spotify.PlaylistIterator;
 import info.rsdev.playlists.spotify.PlaylistTrackIterator;
 import info.rsdev.playlists.spotify.QueryCache;
@@ -179,7 +179,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 
 	@Override
 	public void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs) {
-		List<String> trackIds = songs.stream().map(song -> song.trackUri).collect(Collectors.toList());
+		List<String> trackIds = songs.stream().map(song -> song.getTrackUri()).collect(Collectors.toList());
 		
 		//spotify accepts max. 100 songs in a single request
 		int nrOfSegments = (trackIds.size() / SEGMENT_SIZE) + ((trackIds.size() % SEGMENT_SIZE)==0 ? 0 : 1);

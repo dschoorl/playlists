@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.domain;
+package info.rsdev.playlists.domain
 
-import java.io.Serializable;
-
-import info.rsdev.playlists.services.MusicCatalogService;
+import java.io.Serializable
 
 /**
- * This DTO represents a {@link Song} available in a {@link MusicCatalogService}
- * 
+ * This DTO represents a [song] available in a [info.rsdev.playlists.services.MusicCatalogService]. The [trackUri] points
+ * to description of the track with the catalog service.
+ *
  * @author Dave Schoorl
  */
-public class SongFromCatalog implements Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    
-    public final String trackUri;
-    public final Song song;
+class SongFromCatalog(val song: Song, val trackUri: String) : Serializable {
 
-    public SongFromCatalog(Song song, String trackUri) {
-        this.trackUri = trackUri;
-        this.song = song;
-    }
 }

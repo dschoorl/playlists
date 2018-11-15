@@ -1,5 +1,7 @@
 package info.rsdev.playlists.spotify;
 
+import info.rsdev.playlists.domain.SongFromCatalog;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -10,8 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import info.rsdev.playlists.domain.SongFromCatalog;
 
 public class QueryCache {
     

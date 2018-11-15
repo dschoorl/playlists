@@ -26,10 +26,9 @@ import javax.inject.Inject;
 
 import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.domain.SongFromCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import info.rsdev.playlists.domain.SongFromCatalog;
 
 /**
  * This service is responsible for creating and updating a playlist hosted at a given {@link MusicCatalogService}
@@ -56,12 +55,12 @@ public class PlaylistService {
                 Optional<SongFromCatalog> catalogSong = catalogService.findSong(song);
                 if (!catalogSong.isPresent()) {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(String.format("%s - %s", song, catalogSong.map(item -> item.trackUri).orElse("Not found")));
+                        LOGGER.debug(String.format("%s - %s", song, catalogSong.map(item -> item.getTrackUri()).orElse("Not found")));
                     }
                     notFound++;
                 }
                 
-                catalogSong.filter(songFromCatalog -> !playlistTracks.containsKey(songFromCatalog.trackUri))
+                catalogSong.filter(songFromCatalog -> !playlistTracks.containsKey(songFromCatalog.getTrackUri()))
                     .ifPresent(fromCatalog -> songsToAddToPlaylist.add(fromCatalog));
             }
         }
@@ -85,7 +84,7 @@ public class PlaylistService {
     
     private Map<String, Song> keySongsByTrackUri(Collection<SongFromCatalog> songs) {
         Map<String, Song> songsByTrackUri = new HashMap<>(songs.size());
-        songs.forEach(song -> songsByTrackUri.put(song.trackUri, song.song));
+        songs.forEach(song -> songsByTrackUri.put(song.getTrackUri(), song.getSong()));
         return songsByTrackUri;
     }
 
