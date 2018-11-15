@@ -22,12 +22,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import info.rsdev.playlists.domain.Song;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.domain.ChartsItem;
-import info.rsdev.playlists.domain.Song;
 
 /**
  * This implementation of a {@link MusicTitleService} 

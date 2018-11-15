@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import info.rsdev.playlists.domain.Song;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -51,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.domain.ChartsItem;
-import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.services.MusicChart;
 
 public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
@@ -184,8 +184,8 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
                     .field(WEEK, chartsItem.weekNumber)
                     .field(POSITION, chartsItem.position)
                     .field(IS_NEW_IN_CHART, chartsItem.isNewRelease)
-                    .field(ARTIST, chartsItem.song.artist)
-                    .field(TITLE, chartsItem.song.title)
+                    .field(ARTIST, chartsItem.song.getArtist())
+                    .field(TITLE, chartsItem.song.getTitle())
                 .endObject();
         } catch (IOException e) {
             throw new RuntimeException(e);

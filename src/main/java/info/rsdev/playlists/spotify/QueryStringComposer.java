@@ -15,6 +15,8 @@
  */
 package info.rsdev.playlists.spotify;
 
+import info.rsdev.playlists.domain.Song;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,8 +26,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import info.rsdev.playlists.domain.Song;
 
 public class QueryStringComposer {
 
@@ -43,7 +43,7 @@ public class QueryStringComposer {
     }
 
     public static SortedSet<String> normalizeArtist(Song song) {
-        SortedSet<String> artistWords = splitToLowercaseWords(song.artist);
+        SortedSet<String> artistWords = splitToLowercaseWords(song.getArtist());
         artistWords.removeAll(ARTIST_NOISE_WORDS);
         artistWords = artistWords.stream().map(QueryStringComposer::replaceAliasses)
                 .collect(Collectors.toCollection(() -> new TreeSet<>()));
@@ -51,7 +51,7 @@ public class QueryStringComposer {
     }
 
     public static SortedSet<String> normalizeTitle(Song song) {
-        String title = chooseOneWhenThereIsDoubleASide(song.title);
+        String title = chooseOneWhenThereIsDoubleASide(song.getTitle());
         SortedSet<String> titleWords = splitToLowercaseWords(title);
         titleWords.removeAll(TITLE_NOISE_WORDS);
         return titleWords;

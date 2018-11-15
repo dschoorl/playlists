@@ -2,10 +2,8 @@ package info.rsdev.playlists.services;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 import info.rsdev.playlists.domain.Song;
-
+import org.junit.Test;
 
 public class SongComparatorTest {
 

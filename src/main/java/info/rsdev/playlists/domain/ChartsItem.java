@@ -46,8 +46,8 @@ public class ChartsItem {
                 ", weekNumber=" + weekNumber +
                 ", position=" + position +
                 ", new=" + isNewRelease +
-                ", artist='" + song.artist + '\'' +
-                ", title='" + song.title + '\'' +
+                ", artist='" + song.getArtist() + '\'' +
+                ", title='" + song.getTitle() + '\'' +
                 '}';
     }
 }

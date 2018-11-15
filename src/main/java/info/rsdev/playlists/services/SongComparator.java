@@ -5,11 +5,11 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import info.rsdev.playlists.domain.Song;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.debatty.java.stringsimilarity.JaroWinkler;
-import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.spotify.QueryStringComposer;
 
 

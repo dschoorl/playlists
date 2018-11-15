@@ -24,11 +24,11 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import info.rsdev.playlists.domain.Song;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.domain.CatalogPlaylist;
-import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.domain.SongFromCatalog;
 
 /**

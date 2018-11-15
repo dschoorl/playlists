@@ -15,9 +15,9 @@
  */
 package info.rsdev.playlists.services;
 
-import java.util.List;
-
 import info.rsdev.playlists.domain.Song;
+
+import java.util.List;
 
 /**
  * This interface defines the methods to intialize and interact with a persistence store containing {@link Song}s

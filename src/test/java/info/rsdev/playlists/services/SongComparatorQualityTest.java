@@ -22,13 +22,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import info.rsdev.playlists.domain.Song;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import info.rsdev.playlists.domain.Song;
 
 /**
  * Run a number of comparisons that did not match as equals with earlier implementations of 
