@@ -26,14 +26,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.domain.Song;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import info.rsdev.playlists.domain.ChartsItem;
 
 public class Top40ScrapeService implements ScrapeService {
 

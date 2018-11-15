@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.domain.Song;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -51,7 +52,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.services.MusicChart;
 
 public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
@@ -179,13 +179,13 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         try {
             return XContentFactory.jsonBuilder()
                 .startObject()
-                    .field(CHARTNAME, chartsItem.chartName)
-                    .field(YEAR, chartsItem.year)
-                    .field(WEEK, chartsItem.weekNumber)
-                    .field(POSITION, chartsItem.position)
-                    .field(IS_NEW_IN_CHART, chartsItem.isNewRelease)
-                    .field(ARTIST, chartsItem.song.getArtist())
-                    .field(TITLE, chartsItem.song.getTitle())
+                    .field(CHARTNAME, chartsItem.getChartName())
+                    .field(YEAR, chartsItem.getYear())
+                    .field(WEEK, chartsItem.getWeekNumber())
+                    .field(POSITION, chartsItem.getPosition())
+                    .field(IS_NEW_IN_CHART, chartsItem.isNewRelease())
+                    .field(ARTIST, chartsItem.getSong().getArtist())
+                    .field(TITLE, chartsItem.getSong().getTitle())
                 .endObject();
         } catch (IOException e) {
             throw new RuntimeException(e);

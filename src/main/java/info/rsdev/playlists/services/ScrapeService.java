@@ -15,10 +15,10 @@
  */
 package info.rsdev.playlists.services;
 
+import info.rsdev.playlists.domain.ChartsItem;
+
 import java.util.List;
 import java.util.Optional;
-
-import info.rsdev.playlists.domain.ChartsItem;
 
 /**
  * This service is responsible for scraping a web page containing music charts for a single period, most often a week.
