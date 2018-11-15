@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.domain;
-
-import info.rsdev.playlists.services.MusicCatalogService;
+package info.rsdev.playlists.domain
 
 /**
- * This class represents a playlist at the {@link MusicCatalogService}
+ * This class represents a playlist at the [info.rsdev.playlists.services.MusicCatalogService] with the given logical [name].
+ * The playlist is identified with the service by it's [playlistId].
  * @author Dave Schoorl
  */
-public class CatalogPlaylist {
-	
-	public final String name;
-	
-	/**
-	 * The identifier of the playlist at the {@link MusicCatalogService}
-	 */
-	public final String playlistId;
-
-	public CatalogPlaylist(String name, String catalogProviderId) {
-		this.name = name;
-		this.playlistId = catalogProviderId;
-	}
-	
+class CatalogPlaylist(val name: String, val playlistId: String) {
 }

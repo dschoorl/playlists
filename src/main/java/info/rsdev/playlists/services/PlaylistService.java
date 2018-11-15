@@ -24,11 +24,11 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.SongFromCatalog;
 
 /**
@@ -71,7 +71,7 @@ public class PlaylistService {
         }
 
         catalogService.addToPlaylist(playlist, songsToAddToPlaylist);
-        LOGGER.info(String.format("Added %d songs to playlist %s", songsToAddToPlaylist.size(), playlist.name));
+        LOGGER.info(String.format("Added %d songs to playlist %s", songsToAddToPlaylist.size(), playlist.getName()));
     }
     
     private boolean isMissingInPlaylist(Collection<Song> playlistTracks, Song targetSong) {

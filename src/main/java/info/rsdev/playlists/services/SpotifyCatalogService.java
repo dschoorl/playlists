@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,6 @@ import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
 
-import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.SongFromCatalog;
 import info.rsdev.playlists.spotify.PlaylistIterator;
 import info.rsdev.playlists.spotify.PlaylistTrackIterator;
@@ -184,7 +184,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		//spotify accepts max. 100 songs in a single request
 		int nrOfSegments = (trackIds.size() / SEGMENT_SIZE) + ((trackIds.size() % SEGMENT_SIZE)==0 ? 0 : 1);
 		int currentSegment = 1;
-		String playlistId = playlist.playlistId;
+		String playlistId = playlist.getPlaylistId();
 		try {
 			while (currentSegment <= nrOfSegments) {
 				int toIndex = currentSegment * SEGMENT_SIZE;
@@ -224,7 +224,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 
 	@Override
 	public Collection<SongFromCatalog> getTracksInPlaylist(CatalogPlaylist playlist) {
-		PlaylistTrackIterator trackIterator = PlaylistTrackIterator.create(spotifyApi, currentUser.getId(), playlist.playlistId);
+		PlaylistTrackIterator trackIterator = PlaylistTrackIterator.create(spotifyApi, currentUser.getId(), playlist.getPlaylistId());
 		List<SongFromCatalog> songsFromCatalog = new ArrayList<>(trackIterator.getSize());
 		while(trackIterator.hasNext()) {
 		    Track track = trackIterator.next().getTrack();
