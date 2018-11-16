@@ -7,7 +7,9 @@ Like most people, I love music. But the last couple of years I hardly listen to 
 input of new music being published. And like some people, I am kind of a nerd. So one day, I started to compile a playlist 
 on Spotify per year of all music released in that year. I went over the charts at top40.nl (yes, I am Dutch) and for 
 each week, for every new entry, I looked the song up on spotify, and added it to the playlist. When I completed an annum, 
-I would rate the songs in the playlist. Each song I liked, I added to a playlist called "Nice", but when I thought a song was awesome, I added it to a playlist called "Good and better" instead. Those two are my main playlists for popmusic.
+I would listen to all the songs in the playlist and rate them. Each song I liked, I added to a playlist called "Nice", but when 
+I thought a song was awesome, I added it to a playlist called "Good and better" instead. Those two are my main playlists 
+for popmusic.
 
 I timed my efforts to compile the playlist on spotify and I estimated that it took me about 4 hours per quarter, that 
 is 16 hours per year. I have done this now for about a decade, and the nerd in me wants to be complete, so I have a 

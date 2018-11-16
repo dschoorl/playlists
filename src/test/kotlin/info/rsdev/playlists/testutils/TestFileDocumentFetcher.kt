@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.spotify;
+package info.rsdev.playlists.testutils
 
-import static org.junit.Assert.assertEquals;
+import info.rsdev.playlists.services.DocumentFetcher
+import org.jsoup.Jsoup
+import java.nio.file.Path
+import java.util.*
 
-import info.rsdev.playlists.domain.Song;
-import org.junit.Test;
+class TestFileDocumentFetcher(private val fileLocation: Path) : DocumentFetcher {
 
-public class QueryStringComposerTest {
+    override fun fetch() = Optional.of(Jsoup.parse(fileLocation.toFile(), null))
 
-	@Test
-	public void testFilterFeaturingFromArtistName() throws Exception {
-		String queryString = QueryStringComposer.makeQueryString(new Song("Jannus (featuring Marieke)", "The world is a beautiful thing"));
-		assertEquals("artist:jannus marieke title:beautiful is thing world", queryString);
-	}
-
+    override fun getLocation() = fileLocation.toString()
 }

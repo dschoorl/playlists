@@ -19,7 +19,8 @@ import java.io.Serializable
 
 /**
  * This DTO represents a [song] available in a [info.rsdev.playlists.services.MusicCatalogService]. The [trackUri] points
- * to description of the track with the catalog service.
+ * to description of the track with the catalog service. This item is cached to file by [info.rsdev.playlists.spotify.QueryCache] and
+ * therefore needs to implement [Serializable].
  *
  * @author Dave Schoorl
  */

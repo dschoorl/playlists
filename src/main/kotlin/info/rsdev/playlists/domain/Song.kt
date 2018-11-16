@@ -17,6 +17,11 @@ package info.rsdev.playlists.domain
 
 import java.io.Serializable
 
+/**
+ * This class represents a Song with a [title] that is performed by an [artist]. The natural order of Songs is alphabetical by
+ * [artist] and then alphabetical by [title]. A song can be cached to file by [info.rsdev.playlists.spotify.QueryCache] and
+ * therefore needs to implement [Serializable].
+ */
 data class Song(val artist: String, val title: String) : Comparable<Song>, Serializable {
 
     override fun compareTo(other: Song): Int {
