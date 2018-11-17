@@ -57,23 +57,23 @@ class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken:
     override fun findSong(song: Song): SongFromCatalog? {
         val query = makeQueryString(song)
         var result = queryCache.getFromCache(query)
-        if (!result.isPresent) {
+        if (result == null) {
             result = searchSpotifyForSong(song, query)
             //do not cache nulls when song is not found on spotify, since I am trying to improve my search query
-            result.ifPresent { spotifySong -> queryCache.cache(query, spotifySong) }
-            if (LOGGER.isDebugEnabled && !result.isPresent) {
-                LOGGER.debug("Found=${result.isPresent}: $song with q='$query'")
+            result?.let { spotifySong -> queryCache.cache(query, spotifySong) }
+            if (LOGGER.isDebugEnabled && result == null) {
+                LOGGER.debug("Not found: $song with q='$query'")
             }
         }
-        return result.orElse(null)
+        return result
     }
 
     @Throws(IOException::class, SpotifyWebApiException::class)
-    private fun searchSpotifyForSong(song: Song, queryString: String): Optional<SongFromCatalog> {
+    private fun searchSpotifyForSong(song: Song, queryString: String): SongFromCatalog? {
         val searchResult = executeSearchOnSpotify(queryString)
         val hits = searchResult.total!!
         return if (hits == 0) {
-            Optional.empty()
+            null
         } else {
             selectRightResult(song, searchResult)
         }
@@ -94,7 +94,7 @@ class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken:
         return searchResult
     }
 
-    private fun selectRightResult(song: Song, searchResult: Paging<Track>): Optional<SongFromCatalog> {
+    private fun selectRightResult(song: Song, searchResult: Paging<Track>): SongFromCatalog? {
         //select track with highest popularity score
         var mostPopularTrack: Track? = null
         for (candidate in searchResult.items) {
@@ -102,7 +102,7 @@ class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken:
                 mostPopularTrack = candidate
             }
         }
-        return Optional.ofNullable(makeSongFromCatalog(song, mostPopularTrack!!))
+        return mostPopularTrack?.let { makeSongFromCatalog(song, it) }
     }
 
     override fun getOrCreatePlaylist(playlistName: String): CatalogPlaylist {
@@ -134,10 +134,7 @@ class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken:
     private fun makeSongFromCatalog(song: Song, spotifyTrack: Track) = SongFromCatalog(song, spotifyTrack.uri)
 
     private fun makeSongFromCatalog(spotifyTrack: Track): SongFromCatalog {
-        val artists = spotifyTrack.artists
-                .map<ArtistSimplified, String> { artist -> artist.getName() }
-                .joinToString(" ")
-
+        val artists = spotifyTrack.artists.joinToString(" ") { artist -> artist.getName() }
         val song = Song(artists, spotifyTrack.name)
         return SongFromCatalog(song, spotifyTrack.uri)
     }
