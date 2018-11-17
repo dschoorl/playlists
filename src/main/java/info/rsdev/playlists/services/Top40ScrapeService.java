@@ -49,7 +49,7 @@ public class Top40ScrapeService implements ScrapeService {
 
     @Override
     public List<ChartsItem> scrape(DocumentFetcher fetcher) {
-        return fetcher.fetch()
+        return Optional.ofNullable(fetcher.fetch())
         		.map(this::getChartsItems)
         		.orElse(Collections.emptyList());
     }

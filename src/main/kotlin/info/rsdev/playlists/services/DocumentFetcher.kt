@@ -13,40 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.services;
+package info.rsdev.playlists.services
 
-import java.util.Optional;
-
-import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Document
+import java.util.*
 
 /**
- * This interface defines the interactions to obtain html content from an URL as a {@link Document}. It is capable 
+ * This interface defines the interactions to obtain html content from an URL as a [org.jsoup.nodes.Document]. It is capable
  * of obtaining all information, even in case the information is paginated (@see {@link #hasNext()})
  */
-public interface DocumentFetcher {
+interface DocumentFetcher {
 
     /**
      * Retrieve the information at the given location
-     * @return the {@link Document} when it could be retrieved, wrapped in an {@link Optional}, otherwise an empty optional
+     * @return the [Document] when it could be retrieved, wrapped in an [Optional], otherwise an empty optional
      */
-    Optional<Document> fetch();
+    fun fetch() : Document?
 
     /**
      * Get a string representation of the given location of this instance
      * @return a String representing the location
      */
-    String getLocation();
+    fun getLocation() : String
 
     /**
      * Determine if the information is paginated and there are more pages with information available.
-     * @return true if there is more information available with a call to {@link #fetchNext()}, false otherwise
+     * @return true if there is more information available with a call to [.fetchNext], false otherwise
      */
-    default boolean hasNext() {
-        return false;
-    }
+    fun hasNext() = false
 
-    default Optional<Document> fetchNext() {
-        return Optional.empty();
-    };
-
+    fun fetchNext() : Document? = null
 }

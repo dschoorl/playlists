@@ -50,26 +50,26 @@ class Top40ScrapeServiceTest {
 
     @Test
     fun getTop40Chartname() {
-        assertEquals("Top 40", serviceUnderTest.getChartName(top40DocumentFetcher.fetch().get()))
+        assertEquals("Top 40", serviceUnderTest.getChartName(top40DocumentFetcher.fetch()))
     }
 
     @Test
     fun getTipparadeChartname() {
-        assertEquals("Tipparade", serviceUnderTest.getChartName(tipparadeDocumentFetcher.fetch().get()))
+        assertEquals("Tipparade", serviceUnderTest.getChartName(tipparadeDocumentFetcher.fetch()))
     }
 
     @Test
     fun getYearFromTitle() {
-        assertEquals(2018, serviceUnderTest.getYearOfChart(tipparadeDocumentFetcher.fetch().get()).toLong())
+        assertEquals(2018, serviceUnderTest.getYearOfChart(tipparadeDocumentFetcher.fetch()).toLong())
     }
 
     @Test
     fun getSingleDigitWeeknumberFromTitle() {
-        assertEquals(1, serviceUnderTest.getWeekOfChart(tipparadeDocumentFetcher.fetch().get()).toLong())
+        assertEquals(1, serviceUnderTest.getWeekOfChart(tipparadeDocumentFetcher.fetch()).toLong())
     }
 
     @Test
     fun getTwoDigitWeeknumberFromTitle() {
-        assertEquals(11, serviceUnderTest.getWeekOfChart(top40DocumentFetcher.fetch().get()).toLong())
+        assertEquals(11, serviceUnderTest.getWeekOfChart(top40DocumentFetcher.fetch()).toLong())
     }
 }

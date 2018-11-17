@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.testutils
+package info.rsdev.playlists.services
 
-import info.rsdev.playlists.services.DocumentFetcher
 import org.jsoup.Jsoup
-import java.nio.file.Path
-import java.util.*
+import org.jsoup.nodes.Document
 
-class TestFileDocumentFetcher(private val fileLocation: Path) : DocumentFetcher {
+private const val USERAGENT_STRING = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0"
 
-    override fun fetch() = Jsoup.parse(fileLocation.toFile(), null)
+class InternetChartsFetcher(private val location: String) : DocumentFetcher {
 
-    override fun getLocation() = fileLocation.toString()
+    override fun fetch(): Document? = Jsoup.connect(getLocation())
+                                            .userAgent(USERAGENT_STRING)
+                                            .get()
+
+    override fun getLocation() = this.location
 }

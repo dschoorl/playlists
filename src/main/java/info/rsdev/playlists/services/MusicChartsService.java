@@ -109,7 +109,7 @@ public class MusicChartsService implements MusicTitleService {
     private DocumentFetcher newInternetDocumentFetcher(MusicChart chart, short year, byte weekNumber) {
     	String urlTemplate = scrapeService.getUrlTemplate(chart)
     			.orElseThrow(() -> new IllegalStateException(String.format("%s does not support chart %s", scrapeService, chart)));
-        return new InternetChartsFetcher(urlTemplate, chart, year, weekNumber);
+        return new InternetChartsFetcher(String.format(urlTemplate, chart, year, weekNumber));
     }
 
 }
