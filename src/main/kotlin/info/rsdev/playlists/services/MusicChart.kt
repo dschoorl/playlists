@@ -13,39 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.services;
+package info.rsdev.playlists.services
 
 /**
  * An enumeration of music charts that is understood by this software
  */
-public enum MusicChart { 
+enum class MusicChart private constructor(val chartName: String, val yearStarted: Short, val weekStarted: Byte) {
 
-    TOP40("Top 40", (short)1965, (byte)1),
+    TOP40("Top 40", 1965.toShort(), 1.toByte()),
 
-    TIPPARADE("Tipparade", (short)1967, (byte)28);
+    TIPPARADE("Tipparade", 1967.toShort(), 28.toByte())
 
-    private String name;
-    
-    private short yearStarted;
-    
-    private byte weekStarted;
-
-    MusicChart(String name, short yearStarted, byte weekStarted) {
-        this.name = name;
-        this.yearStarted = yearStarted;
-        this.weekStarted = weekStarted;
-    }
-    
-    public String getName() {
-    	return name;
-    }
-
-    public short getYearStarted() {
-    	return yearStarted;
-    }
-    
-    public byte getWeekStarted() {
-    	return weekStarted;
-    }
-    
 }

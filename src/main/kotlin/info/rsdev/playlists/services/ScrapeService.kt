@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.services;
+package info.rsdev.playlists.services
 
-import info.rsdev.playlists.domain.ChartsItem;
-
-import java.util.List;
-import java.util.Optional;
+import info.rsdev.playlists.domain.ChartsItem
+import java.util.Optional
 
 /**
  * This service is responsible for scraping a web page containing music charts for a single period, most often a week.
  */
-public interface ScrapeService {
+interface ScrapeService {
+
+    val supportedCharts: List<MusicChart>
 
     /**
-     * Transform the html that is retrieved via the {@link DocumentFetcher} into a list of {@link ChartsItem}s
-     * @param fetcher the {@link DocumentFetcher} pointing at a html source
-     * @return the {@link ChartsItem}s that are listed in the html
+     * Transform the html that is retrieved via the [DocumentFetcher] into a list of [ChartsItem]s
+     * @param fetcher the [DocumentFetcher] pointing at a html source
+     * @return the [ChartsItem]s that are listed in the html
      */
-    List<ChartsItem> scrape(DocumentFetcher fetcher);
-    
-    List<MusicChart> getSupportedCharts();
-    
-    Optional<String> getUrlTemplate(MusicChart chart);
-    
+    fun scrape(fetcher: DocumentFetcher): List<ChartsItem>
+
+    fun getUrlTemplate(chart: MusicChart): String?
+
 }

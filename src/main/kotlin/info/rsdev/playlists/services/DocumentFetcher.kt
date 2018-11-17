@@ -26,7 +26,7 @@ interface DocumentFetcher {
 
     /**
      * Retrieve the information at the given location
-     * @return the [Document] when it could be retrieved, wrapped in an [Optional], otherwise an empty optional
+     * @return the [Document] when it could be retrieved, null otherwise
      */
     fun fetch() : Document?
 

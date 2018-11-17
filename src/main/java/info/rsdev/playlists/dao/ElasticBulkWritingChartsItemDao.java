@@ -265,7 +265,7 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         searchSourceBuilder.size(0);
         searchSourceBuilder.fetchSource(false);
         BoolQueryBuilder filterQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery(CHARTNAME, chart.getName()));
+                .filter(QueryBuilders.termQuery(CHARTNAME, chart.getChartName()));
         searchSourceBuilder.query(filterQuery);
         
         searchSourceBuilder.aggregation(AggregationBuilders.max("maxYear").field(YEAR));
@@ -293,7 +293,7 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
         searchSourceBuilder.size(0);
         searchSourceBuilder.fetchSource(false);
         BoolQueryBuilder filterQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery(CHARTNAME, chart.getName()))
+                .filter(QueryBuilders.termQuery(CHARTNAME, chart.getChartName()))
                 .filter(QueryBuilders.rangeQuery(YEAR)
                         .gte(year)
                         .lte(year)
