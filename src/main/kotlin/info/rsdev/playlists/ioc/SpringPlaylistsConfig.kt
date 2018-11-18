@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.ioc;
+package info.rsdev.playlists.ioc
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 
-import info.rsdev.playlists.services.PlaylistService;
+import info.rsdev.playlists.services.PlaylistService
 
 /**
  *
  * @author Dave Schoorl
  */
 @Configuration
-@Import({SpringCommonConfig.class})
-public class SpringPlaylistsConfig {
+@Import(SpringCommonConfig::class)
+class SpringPlaylistsConfig {
 
-    @Bean PlaylistService playlistService() {
-    	return new PlaylistService();
+    @Bean
+    internal fun playlistService(): PlaylistService {
+        return PlaylistService()
     }
 
 }
