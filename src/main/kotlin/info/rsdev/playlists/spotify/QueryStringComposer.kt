@@ -28,19 +28,23 @@ import java.util.stream.Collectors
 
 object QueryStringComposer {
 
-    private val ARTIST_NOISE_WORDS = HashSet<String>()
-    private val TITLE_NOISE_WORDS = HashSet<String>()
-    private val ARTIST_ALIASSES = HashMap<String, String>()
+    // all entries must be lower case
+    private val ARTIST_NOISE_WORDS = hashSetOf("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x", "+", "vs", "vs.")
+    private val TITLE_NOISE_WORDS = hashSetOf("the", "a", "de", "-", "radio", "edit", "mix", "single")
+    private val ARTIST_ALIASSES = hashMapOf("atc" to "a touch of class",
+            "beegees" to "bee gees", "scr!pt" to "script")
 
-    init {
-        // all entries must be lower case
-        ARTIST_NOISE_WORDS.addAll(Arrays.asList("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x",
-                "+", "vs", "vs."))
-        TITLE_NOISE_WORDS.addAll(Arrays.asList("the", "a", "de", "-", "radio", "edit", "mix", "single"))
+    /**
+     * The fieldname in the query string that is appended before the artists keywords. As a result, the artist keywords
+     * are only used to find the artist
+     */
+    private val ARTIST_FIELD = "artist"
 
-        ARTIST_ALIASSES["atc"] = "a touch of class"
-        ARTIST_ALIASSES["beegees"] = "bee gees"
-    }
+    /**
+     * The fieldname in the query string that is appended before the title keywords. As a result, the title keywords
+     * are only used to find the track
+     */
+    private val TRACK_TITLE_FIELD = "track"
 
     fun normalizeArtist(song: Song): SortedSet<String> {
         var artistWords = splitToLowercaseWords(song.artist)
@@ -61,11 +65,11 @@ object QueryStringComposer {
         val titleWords = normalizeTitle(song)
         val artistWords = normalizeArtist(song)
         val query = StringBuilder()
-        appendSearchField(query, "artist", artistWords)
+        appendSearchField(query, ARTIST_FIELD, artistWords)
         if (!artistWords.isEmpty()) {
             query.append(" ")
         }
-        appendSearchField(query, "title", titleWords)
+        appendSearchField(query, TRACK_TITLE_FIELD, titleWords)
         return query.toString()
     }
 
