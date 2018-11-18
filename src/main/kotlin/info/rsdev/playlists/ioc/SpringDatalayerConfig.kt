@@ -34,10 +34,10 @@ import info.rsdev.playlists.dao.ElasticBulkWritingChartsItemDao
  */
 @Configuration
 @PropertySource(value = ["file:\${user.home}/.playlists/elasticsearch.properties"])
-class SpringDatalayerConfig {
+open class SpringDatalayerConfig {
 
     @Inject
-    internal var env: Environment? = null
+    internal lateinit var env: Environment
 
     @Bean
     fun chartsItemDao(elasticClient: RestHighLevelClient): ChartsItemDao {
@@ -46,8 +46,8 @@ class SpringDatalayerConfig {
 
     @Bean
     fun elasticClient(): RestHighLevelClient {
-        val hostname = env!!.getProperty("es.hostname", "localhost")
-        val portnumber = Integer.parseInt(env!!.getProperty("es.portnumber", "9200"))
+        val hostname = env.getProperty("es.hostname", "localhost")
+        val portnumber = Integer.parseInt(env.getProperty("es.portnumber", "9200"))
         return RestHighLevelClient(RestClient.builder(HttpHost(hostname, portnumber, "http")))
     }
 

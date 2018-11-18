@@ -32,12 +32,12 @@ import org.slf4j.LoggerFactory
  *
  * @author Dave Schoorl
  */
-class PlaylistService {
+open class PlaylistService {
 
     private val LOGGER = LoggerFactory.getLogger(PlaylistService::class.java)
 
     @Inject
-    private val catalogService: MusicCatalogService? = null
+    private lateinit var catalogService: MusicCatalogService
 
     fun fillPlaylistWithSongs(playlistName: String, songs: List<Song>) {
         if (LOGGER.isInfoEnabled) {

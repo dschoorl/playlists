@@ -31,7 +31,7 @@ import java.util.function.Consumer
 /**
  * This is the default implementation of a [MusicTitleService]
  */
-class MusicChartsService
+open class MusicChartsService
 
 @Inject
 constructor(private val scrapeService: ScrapeService, private val chartsItemDao: ChartsItemDao) : MusicTitleService {

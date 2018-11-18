@@ -44,15 +44,15 @@ import kotlin.String.Companion
 @Configuration
 @PropertySource(value = ["file:\${user.home}/.playlists/spotify.properties"])
 @Import(SpringDatalayerConfig::class)
-class SpringCommonConfig {
+open class SpringCommonConfig {
 
     @Inject
-    internal var env: Environment? = null
+    internal lateinit var env: Environment
 
     private val accessTokenUrlMessage: String
         get() {
-            val clientId = env!!.getRequiredProperty("spotify.clientId")
-            val redirectUrl = URLEncoder.encode(env!!.getRequiredProperty("spotify.redirectUrl"), "UTF-8")
+            val clientId = env.getRequiredProperty("spotify.clientId")
+            val redirectUrl = URLEncoder.encode(env.getRequiredProperty("spotify.redirectUrl"), "UTF-8")
             return String.format("Get your accessToken through your web browser at:%n"
                     + "https://accounts.spotify.com/authorize" +
                     "?response_type=token&client_id=%s&redirect_uri=%s&scope=playlist-read-private%%20playlist-modify-private%%20playlist-modify%n", clientId, redirectUrl)
@@ -69,28 +69,19 @@ class SpringCommonConfig {
     }
 
     @Bean
-    internal fun catalogService(): MusicCatalogService? {
-        val clientId = env!!.getRequiredProperty("spotify.clientId")
-        val clientSecret = env!!.getRequiredProperty("spotify.clientSecret")
-        val accessToken = env!!.getProperty("spotify.accessToken")
+    internal fun catalogService(): MusicCatalogService {
+        val clientId = env.getRequiredProperty("spotify.clientId")
+        val clientSecret = env.getRequiredProperty("spotify.clientSecret")
+        val accessToken = env.getRequiredProperty("spotify.accessToken")
         if (StringUtils.isEmpty(accessToken)) {
             throw RuntimeException(accessTokenUrlMessage)
         }
-        val refreshToken = env!!.getProperty("spotify.refreshToken")  //currently not supported / needed
-        var catalogService: SpotifyCatalogService? = null
+        val refreshToken = env.getProperty("spotify.refreshToken")  //currently not supported / needed
         try {
-            catalogService = SpotifyCatalogService(clientId, clientSecret, accessToken!!, refreshToken!!)
-        } catch (e: RuntimeException) {
-            handleRuntimeException(e)
-        }
-
-        return catalogService
-    }
-
-    private fun handleRuntimeException(e: RuntimeException) {
-        if (e.cause is UnauthorizedException) {
+            return SpotifyCatalogService(clientId, clientSecret, accessToken, refreshToken)
+        } catch (e: UnauthorizedException) {
             throw IllegalStateException(accessTokenUrlMessage, e)
         }
-        throw e
     }
+
 }

@@ -18,8 +18,10 @@ package info.rsdev.playlists
 import info.rsdev.playlists.services.MusicTitleService
 import info.rsdev.playlists.services.PlaylistService
 import org.slf4j.LoggerFactory
+import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
 import javax.inject.Inject
 
@@ -27,24 +29,24 @@ import javax.inject.Inject
  * @author Dave Schoorl
  */
 @SpringBootApplication
-class Playlists {
+class Playlists : CommandLineRunner {
 
     @Inject
-    private val titleService: MusicTitleService? = null
+    private lateinit var titleService: MusicTitleService
 
     @Inject
-    private val playlistService: PlaylistService? = null
+    private lateinit var playlistService: PlaylistService
 
-    private fun start(args: Array<String>) {
+    override fun run(args: Array<String>) {
         val startTime = System.currentTimeMillis()
-        titleService!!.init()
+        titleService.init()
         LOGGER.info(String.format("Datastore initialized after %ds", (System.currentTimeMillis() - startTime) / 1000))
 
         //Change the value of 'year' below to select the year for which you want to create a playlist
         val year: Short = 2018
 
         val chartedSongs = titleService.getChartedSongsForYear(year)
-        playlistService!!.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs)
+        playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs)
 
         LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime) / 1000))
     }
@@ -60,9 +62,7 @@ class Playlists {
          */
         @JvmStatic
         fun main(args: Array<String>) {
-            val iocContext = SpringApplication.run(Playlists::class.java, *args)
-            val playlists = iocContext.getBean(Playlists::class.java)
-            playlists.start(args)
+            runApplication<Playlists>(*args)
         }
     }
 

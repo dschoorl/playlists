@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.regex.Pattern
 
-class Top40ScrapeService : ScrapeService {
+open class Top40ScrapeService : ScrapeService {
 
     private val SUPPORTED_CHARTS = listOf(TOP40, TIPPARADE)
 

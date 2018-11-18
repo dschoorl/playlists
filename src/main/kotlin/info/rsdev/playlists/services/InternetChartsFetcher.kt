@@ -20,7 +20,7 @@ import org.jsoup.nodes.Document
 
 private const val USERAGENT_STRING = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0"
 
-class InternetChartsFetcher(private val location: String) : DocumentFetcher {
+open class InternetChartsFetcher(private val location: String) : DocumentFetcher {
 
     override fun fetch(): Document? = Jsoup.connect(getLocation())
                                             .userAgent(USERAGENT_STRING)

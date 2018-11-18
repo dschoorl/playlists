@@ -18,6 +18,7 @@ package info.rsdev.playlists.services
 import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
 import com.wrapper.spotify.exceptions.detailed.TooManyRequestsException
+import com.wrapper.spotify.exceptions.detailed.UnauthorizedException
 import com.wrapper.spotify.model_objects.special.SnapshotResult
 import com.wrapper.spotify.model_objects.specification.*
 import info.rsdev.playlists.domain.CatalogPlaylist
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
 
-class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken: String, refreshToken: String) : MusicCatalogService {
+open class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken: String, refreshToken: String?) : MusicCatalogService {
 
     private val queryCache: QueryCache
 
@@ -48,7 +49,8 @@ class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken:
                 .setRefreshToken(refreshToken)
                 .build()
 
-        this.currentUser = getCurrentUser()
+        val authenticatedUser: User? = getCurrentUser()
+        this.currentUser = authenticatedUser?:throw UnauthorizedException()
 
         this.queryCache = QueryCache()
         LOGGER.info("Read ${queryCache.size()} cache entries from file")
@@ -114,8 +116,8 @@ class SpotifyCatalogService(clientId: String, clientSecret: String, accessToken:
         val iterator = PlaylistIterator.create(spotifyApi)
         while (iterator.hasNext()) {
             val spotifyPlaylist = iterator.next()
-            LOGGER.info("Encountered playlist '${spotifyPlaylist.name}'")
             if (spotifyPlaylist.name == targetName) {
+                LOGGER.info("Found existing playlist '${spotifyPlaylist.name}' on Spotify")
                 return Optional.of(makePlaylist(spotifyPlaylist))
             }
         }
