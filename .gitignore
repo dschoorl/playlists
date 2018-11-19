@@ -22,6 +22,3 @@ build
 
 # ignore Mac OSX related files and directories
 .DS_Store
-
-# temporary (sources we copied as an example from another project)
-src/main/java/info/rsdev/opendata/openkvk/*
