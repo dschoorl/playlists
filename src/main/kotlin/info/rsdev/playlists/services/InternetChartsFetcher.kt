@@ -15,6 +15,7 @@
  */
 package info.rsdev.playlists.services
 
+import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
@@ -22,9 +23,11 @@ private const val USERAGENT_STRING = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv
 
 open class InternetChartsFetcher(private val location: String) : DocumentFetcher {
 
-    override fun fetch(): Document? = Jsoup.connect(getLocation())
-                                            .userAgent(USERAGENT_STRING)
-                                            .get()
+    override fun fetch(): Document? = try {
+            Jsoup.connect(getLocation())
+                .userAgent(USERAGENT_STRING)
+                .get()
+        } catch( e: HttpStatusException) { null }
 
     override fun getLocation() = this.location
 }
