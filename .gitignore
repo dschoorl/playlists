@@ -17,7 +17,8 @@ nb-*
 target
 
 # ignore gradle related files and directories
-build
+build/
+out/
 .gradle
 
 # ignore Mac OSX related files and directories

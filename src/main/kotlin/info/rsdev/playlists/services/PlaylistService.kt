@@ -15,17 +15,11 @@
  */
 package info.rsdev.playlists.services
 
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.Optional
-
-import javax.inject.Inject
-
-import info.rsdev.playlists.domain.CatalogPlaylist
 import info.rsdev.playlists.domain.Song
 import info.rsdev.playlists.domain.SongFromCatalog
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
+import javax.inject.Inject
 
 /**
  * This service is responsible for creating and updating a playlist hosted at a given [MusicCatalogService]
@@ -43,7 +37,7 @@ open class PlaylistService {
         if (LOGGER.isInfoEnabled) {
             LOGGER.info("Searching for ${songs.size} titles in playlist $playlistName")
         }
-        val playlist = catalogService!!.getOrCreatePlaylist(playlistName)
+        val playlist = catalogService.getOrCreatePlaylist(playlistName)
         val playlistTracks = keySongsByTrackUri(catalogService.getTracksInPlaylist(playlist))
         val songsToAddToPlaylist = ArrayList<SongFromCatalog>(songs.size)
         var notFound = 0
@@ -51,19 +45,19 @@ open class PlaylistService {
             if (isMissingInPlaylist(playlistTracks.values, song)) {
                 val catalogSong = catalogService.findSong(song)
                 if (catalogSong == null) {
-                    if (LOGGER.isDebugEnabled) {
-                        LOGGER.debug("$song - Not found")
-                    }
                     notFound++
                 }
 
-                catalogSong?.takeIf { !playlistTracks.containsKey(it.trackUri) }
-                           ?.let { songsToAddToPlaylist.add(it) }
+                val isAdded = catalogSong?.takeIf { !playlistTracks.containsKey(it.trackUri) }
+                                       ?.let { songsToAddToPlaylist.add(it) }
+                if (LOGGER.isDebugEnabled && isAdded == true) {
+                    LOGGER.debug("Added to playlist: ${catalogSong}")
+                }
             }
         }
 
         if (notFound > 0) {
-            LOGGER.warn("Total # not found on spotify: $notFound")
+            LOGGER.warn("Found ${songs.size - notFound} / of ${songs.size} on spotify")
         }
 
         catalogService.addToPlaylist(playlist, songsToAddToPlaylist)
@@ -73,6 +67,9 @@ open class PlaylistService {
     private fun isMissingInPlaylist(playlistTracks: Collection<Song>, targetSong: Song): Boolean {
         for (candidate in playlistTracks) {
             if (SongComparator.INSTANCE.compare(candidate, targetSong) == 0) {
+                if (LOGGER.isDebugEnabled) {
+                    LOGGER.debug("Already in playlist: $targetSong matched $candidate")
+                }
                 return false
             }
         }

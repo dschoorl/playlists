@@ -16,20 +16,16 @@
 package info.rsdev.playlists.spotify
 
 import info.rsdev.playlists.domain.Song
-import org.jsoup.select.Collector.collect
 
 import java.io.UnsupportedEncodingException
-import java.util.Arrays
-import java.util.HashMap
-import java.util.HashSet
 import java.util.SortedSet
 import java.util.TreeSet
-import java.util.stream.Collectors
 
 object QueryStringComposer {
 
     // all entries must be lower case
-    private val ARTIST_NOISE_WORDS = hashSetOf("feat", "feat.", "featuring", "ft.", "ft", "the", "with", "and", "x", "+", "vs", "vs.")
+    private val CREDITS_NOISE_WORDS = hashSetOf("feat", "feat.", "featuring", "ft.", "ft")
+    private val ARTIST_NOISE_WORDS = hashSetOf("the", "with", "and", "x", "+", "vs", "vs.")
     private val TITLE_NOISE_WORDS = hashSetOf("the", "a", "de", "-", "radio", "edit", "mix", "single")
     private val ARTIST_ALIASSES = hashMapOf("atc" to "a touch of class",
             "beegees" to "bee gees", "scr!pt" to "script")
@@ -49,6 +45,7 @@ object QueryStringComposer {
     fun normalizeArtist(song: Song): SortedSet<String> {
         var artistWords = splitToLowercaseWords(song.artist)
         artistWords.removeAll(ARTIST_NOISE_WORDS)
+        artistWords.removeAll(CREDITS_NOISE_WORDS)
         artistWords = artistWords.map{ replaceAliasses(it) }.toSortedSet()
         return artistWords
     }
@@ -57,6 +54,12 @@ object QueryStringComposer {
         val title = chooseOneWhenThereIsDoubleASide(song.title)
         val titleWords = splitToLowercaseWords(title)
         titleWords.removeAll(TITLE_NOISE_WORDS)
+        titleWords.removeAll(CREDITS_NOISE_WORDS)
+
+        //Remove artist words from title
+        val artistWords =  normalizeArtist(song)
+        titleWords.removeAll(artistWords)
+
         return titleWords
     }
 
@@ -65,7 +68,7 @@ object QueryStringComposer {
         val titleWords = normalizeTitle(song)
         val artistWords = normalizeArtist(song)
         val query = StringBuilder()
-        appendSearchField(query, ARTIST_FIELD, artistWords)
+        appendSearchField(query, null, artistWords)
         if (!artistWords.isEmpty()) {
             query.append(" ")
         }
@@ -82,9 +85,11 @@ object QueryStringComposer {
     private fun replaceAliasses(word: String) = ARTIST_ALIASSES[word]?:word
 
     @Throws(UnsupportedEncodingException::class)
-    private fun appendSearchField(query: StringBuilder, fieldName: String, words: SortedSet<String>): StringBuilder {
+    private fun appendSearchField(query: StringBuilder, fieldName: String?, words: SortedSet<String>): StringBuilder {
         if (!words.isEmpty()) {
-            query.append(fieldName).append(":")
+            if (fieldName != null) {
+                query.append(fieldName).append(":")
+            }
             query.append(words.joinToString(" "))
         }
         return query

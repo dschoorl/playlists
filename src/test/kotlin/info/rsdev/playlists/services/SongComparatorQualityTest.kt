@@ -35,7 +35,8 @@ class SongComparatorQualityTest(private val thizSong: Song, private val thatSong
         @Parameterized.Parameters
         fun getProblemSongs(): Collection<Array<Any>> {
             return listOf(
-                    arrayOf(Song("Alle Farben, Graham Candy", "She Moves"), Song("Alle Farben, Graham Candy", "She Moves (Far Away) - Club Mix"), true)
+                    arrayOf(Song("Alle Farben, Graham Candy", "She Moves"), Song("Alle Farben, Graham Candy", "She Moves (Far Away) - Club Mix"), true),
+                    arrayOf(Song("Felix Jaehn feat. Marc E. Bassy & Gucci Mane", "Cool"), Song("Felix Jaehn, Marc E. Bassy, Gucci Mane", "Cool (feat. Marc E. Bassy, Gucci Mane)"), true)
             )
         }
     }

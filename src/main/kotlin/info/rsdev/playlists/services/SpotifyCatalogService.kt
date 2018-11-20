@@ -59,19 +59,30 @@ open class SpotifyCatalogService(clientId: String, clientSecret: String, accessT
     override fun findSong(song: Song): SongFromCatalog? {
         val query = makeQueryString(song)
         var result = queryCache.getFromCache(query)
+        var cacheHit = false
         if (result == null) {
             result = searchSpotifyForSong(song, query)
             //do not cache nulls when song is not found on spotify, since I am trying to improve my search query
             result?.let { spotifySong -> queryCache.cache(query, spotifySong) }
-            if (LOGGER.isDebugEnabled && result == null) {
-                LOGGER.debug("Not found: $song with q='$query'")
+        } else if (LOGGER.isTraceEnabled) {
+            cacheHit = true
+        }
+
+        if (LOGGER.isDebugEnabled) {
+            if (result == null) {
+                LOGGER.debug("Not found on Spotify: $song with q='$query'")
+            } else {
+                if (LOGGER.isTraceEnabled) {
+                    LOGGER.trace("Found (cacheHit=$cacheHit): $result")
+                }
             }
         }
+
         return result
     }
 
     @Throws(IOException::class, SpotifyWebApiException::class)
-    private fun searchSpotifyForSong(song: Song, queryString: String): SongFromCatalog? {
+    internal fun searchSpotifyForSong(song: Song, queryString: String): SongFromCatalog? {
         val searchResult = executeSearchOnSpotify(queryString)
         val hits = searchResult.total!!
         return if (hits == 0) {

@@ -24,6 +24,4 @@ import java.io.Serializable
  *
  * @author Dave Schoorl
  */
-class SongFromCatalog(val song: Song, val trackUri: String) : Serializable {
-
-}
+data class SongFromCatalog(val song: Song, val trackUri: String) : Serializable

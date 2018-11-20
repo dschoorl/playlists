@@ -25,19 +25,19 @@ class QueryStringComposerTest {
     @Test
     fun omit_The_ArticleFromArtistAndTitleKeywords() {
         val queryString = QueryStringComposer.makeQueryString(Song("the band", "the song"))
-        assertEquals("artist:band track:song", queryString)
+        assertEquals("band track:song", queryString)
     }
 
     @Test
     fun omit_A_ArticleFromTitleKeywords() {
         val queryString = QueryStringComposer.makeQueryString(Song("a singer", "a song"))
-        assertEquals("artist:a singer track:song", queryString)
+        assertEquals("a singer track:song", queryString)
     }
 
     @Test
     fun orderKeyWordsArtistAndTitleAlphabetically() {
         //this is done to make test asserts easier
         val queryString = QueryStringComposer.makeQueryString(Song("zero downtime", "three two one"))
-        assertEquals("artist:downtime zero track:one three two", queryString)
+        assertEquals("downtime zero track:one three two", queryString)
     }
 }
