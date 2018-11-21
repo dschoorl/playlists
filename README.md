@@ -109,7 +109,7 @@ From the commandline, go into the 'playlist' subdirectory that was created by th
 directory. From here you can build and run the application.
 
 Execute the following command to build the project:   
-On Windows: ```./gradelw.bat build ```   
+On Windows: ```gradelw.bat build ```   
 On Mac/Linux: ```./gradlew build```
 
 This will create a fat jar in the sub directory called ```build/libs``` that can be executed with the ```java -jar``` 
