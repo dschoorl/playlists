@@ -158,17 +158,12 @@ After replacing the previous spotify.accessToken value in the spotify.property f
 and it should now be able to connect to Spotify on your behalf.
 
 First thing that the application will do, is go to the website of top40, load all the top-40 and tipparade info from
-it, and store it in it's database. For the first time, this can take a while, since these charts date back to the sixties. In subsequent runs, it will only load missing editions of the supported music charts.
+it, and store it in it's database. For the first time, this can take a while, since these charts date back to the sixties. 
+In subsequent runs, it will only load missing editions of the supported music charts.
 
-Then it will query the database to retrieve all released singles that entered these charts for the year you configured in 
-the Class `Playlists.java`. It will log some interesting details and terminate when it's finished.
+Then it will query the database to retrieve all released singles that entered these charts for the year you asked for
+through a commandline argument. It will log some interesting details like displayed below:
 
-If you now open your spotify client, you can see a new (or updated) playlist with the name '<year> charted songs'. If 
-you configured the Playlists.java class that this should be 2018, then the playlist is titled '2018 charted songs'.
-
-You need to follow this procedure again for each year you want to create a playlist for. 
-
-When all prerequisites have met, the program would output something like below for the year 2018:
 ```
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -210,19 +205,23 @@ When all prerequisites have met, the program would output something like below f
 
 ```
 
-The program keeps running, although it's doing nothing and you need to stop it with Ctrl-C. If you would check your 
-Spotify account now, you would see a playlist called  '_2018 charted songs_' that was filled by the playlists application.. 
+The program keeps running, although it's doing nothing and you need to stop it with Ctrl-C. 
+
+If you now open your spotify client, you can see a new (or updated) playlist with the name '\<year> charted songs'. If 
+you asked for 2018, then the playlist is titled '2018 charted songs'.
+
+You need to follow this procedure again for each year you want to create a playlist for. 
 
 ## Status
 The program works for me, because I know how to handle and run it. I tried to explain setup and running as good as 
-possible, so it can work for you too. It took me 65 hours to write the first version that was feature complete for my 
-purposes, so I have a return on investment of 4 years. I consider that to be pretty good. Meanwhile, I learned a few 
+possible, so that it can work for you too. It took me 65 hours to write the first version that was feature complete for my 
+purposes, which gives me a return on investment of 4 years. I consider that to be pretty good. Meanwhile, I learned a few 
 new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-database, but also JSoup and 
 Spotify-web-api to name a few smaller frameworks that were new to me.
 
-I will continue to support this project, to try out new technologies. Recent changes I have applied is switching from
-Java to Kotlin as the programming language and switching from the Maven build tool to Gradle. I also added Spring Boot 
-to the mix, all tachnologies that I want to get experience with. The next big thing I want to do is add a GUI for 
+I will continue to support this project in order to try out new technologies. Recent changes I have applied are switching 
+from Java to Kotlin as the programming language and switching from the Maven build tool to Gradle. I also added Spring 
+Boot to the mix, all tachnologies that I want to get experience with. The next big thing I want to do is add a GUI for 
 improved user experience. This will probably be a Javascript framework like Angular.
 
 I have some additional ideas to add to the program, more in the area of functional requirements, like
