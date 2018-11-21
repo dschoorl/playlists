@@ -37,31 +37,35 @@ open class PlaylistService {
         if (LOGGER.isInfoEnabled) {
             LOGGER.info("Searching for ${songs.size} titles in playlist $playlistName")
         }
-        val playlist = catalogService.getOrCreatePlaylist(playlistName)
-        val playlistTracks = keySongsByTrackUri(catalogService.getTracksInPlaylist(playlist))
-        val songsToAddToPlaylist = ArrayList<SongFromCatalog>(songs.size)
-        var notFound = 0
-        for (song in songs) {
-            if (isMissingInPlaylist(playlistTracks.values, song)) {
-                val catalogSong = catalogService.findSong(song)
-                if (catalogSong == null) {
-                    notFound++
-                }
+        if (songs.isNotEmpty()) {
+            val playlist = catalogService.getOrCreatePlaylist(playlistName)
+            val playlistTracks = keySongsByTrackUri(catalogService.getTracksInPlaylist(playlist))
+            val songsToAddToPlaylist = ArrayList<SongFromCatalog>(songs.size)
+            var notFound = 0
+            for (song in songs) {
+                if (isMissingInPlaylist(playlistTracks.values, song)) {
+                    val catalogSong = catalogService.findSong(song)
+                    if (catalogSong == null) {
+                        notFound++
+                    }
 
-                val isAdded = catalogSong?.takeIf { !playlistTracks.containsKey(it.trackUri) }
-                                       ?.let { songsToAddToPlaylist.add(it) }
-                if (LOGGER.isDebugEnabled && isAdded == true) {
-                    LOGGER.debug("Added to playlist: ${catalogSong}")
+                    val isAdded = catalogSong?.takeIf { !playlistTracks.containsKey(it.trackUri) }
+                            ?.let { songsToAddToPlaylist.add(it) }
+                    if (LOGGER.isDebugEnabled && isAdded == true) {
+                        LOGGER.debug("Added to playlist: ${catalogSong}")
+                    }
                 }
             }
-        }
 
-        if (notFound > 0) {
-            LOGGER.warn("Found ${songs.size - notFound} / of ${songs.size} on spotify")
-        }
+            if (notFound > 0) {
+                LOGGER.warn("Found ${songs.size - notFound} / of ${songs.size} on spotify")
+            }
 
-        catalogService.addToPlaylist(playlist, songsToAddToPlaylist)
-        LOGGER.info("Added ${songsToAddToPlaylist.size} songs to playlist ${playlist.name}")
+            catalogService.addToPlaylist(playlist, songsToAddToPlaylist)
+            LOGGER.info("Added ${songsToAddToPlaylist.size} songs to playlist ${playlist.name}")
+        } else {
+            LOGGER.warn("Playlist '$playlistName' is not created on Spotify, because there are no songs to put into it")
+        }
     }
 
     private fun isMissingInPlaylist(playlistTracks: Collection<Song>, targetSong: Song): Boolean {
