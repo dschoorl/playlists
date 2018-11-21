@@ -15,6 +15,7 @@
  */
 package info.rsdev.playlists
 
+import com.vividsolutions.jts.geom.Dimension.L
 import info.rsdev.playlists.services.MusicTitleService
 import info.rsdev.playlists.services.PlaylistService
 import org.slf4j.LoggerFactory
@@ -22,6 +23,8 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import java.time.LocalDate
+import java.util.*
 
 import javax.inject.Inject
 
@@ -39,16 +42,22 @@ class Playlists : CommandLineRunner {
 
     override fun run(args: Array<String>) {
         val startTime = System.currentTimeMillis()
+
+        LOGGER.info("Program arguments: ${Arrays.toString(args)}")
+        val year: Short = getYear(args)
+
         titleService.init()
         LOGGER.info(String.format("Datastore initialized after %ds", (System.currentTimeMillis() - startTime) / 1000))
-
-        //Change the value of 'year' below to select the year for which you want to create a playlist
-        val year: Short = 2018
 
         val chartedSongs = titleService.getChartedSongsForYear(year)
         playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs)
 
         LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime) / 1000))
+    }
+
+    fun getYear(args: Array<String>) : Short {
+        //too little time, implemented quick and dirty -- no validation or error checking
+        return args[0]?.toShort()?:LocalDate.now().year.toShort()
     }
 
     companion object {

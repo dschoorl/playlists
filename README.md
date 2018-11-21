@@ -1,6 +1,6 @@
 # playlists
 ## Purpose
-Compile Spotify playlists based on music titles taken from music charts published on the internet.
+Compile Spotify playlists from music charts published on the internet.
 
 ## Background
 Like most people, I love music. But the last couple of years I hardly listen to the radio anymore, so I was lacking 
@@ -26,13 +26,13 @@ Songs that could not be found are listed in the application log. You can try to 
 spelling than Spotify. But sometimes a song is not available, or a song is only available performed by a coverband.
 
 When you instruct the program multiple times to compile the playlist for the same year, it will never remove songs from 
-the existing playlist, it will only add new songs when they are not yet present.
+the existing playlist, it will only add new songs when they are not already present.
 
 ## Setup
 What you need to get this program running, is the following:
 1. A running ElasticSearch database
 1. A clientId that you receive when you register this application with Spotify
-1. A Java IDE with Java 8 or newer
+1. A Java 8 SDK (or newer)
 
 Below each requirement is discussed in more detail.
 
@@ -42,7 +42,7 @@ one, only to gain some experience with this type of database. Installing Elastic
 here: https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html
 
 Next you need to provide connection details to the playlists application via a property file called
-`elasticsearch.properties`, which must be located in you home folder, in the subdirectory called `.playlists`. You 
+`elasticsearch.properties`, which must be located in your home folder, in the subdirectory called `.playlists`. You 
 need to create these mannually as part of the setup process. The property file must contain two key-value pairs, for the 
 properties `es.hostname` and `es.portnumber`.
 
@@ -97,20 +97,29 @@ spotify.redirectUrl=https://playlists.for.me
 spotify.accessToken=
 ```
 
-### A Java IDE
-Finally, you need to make small adjustments to the Java source code, in order to instruct for which year you want to 
-create or update a playlist. Currently you can do this only one year at a time. I assume you are a (Java) developer and 
-you have an Java IDE installed on your machine, E.g. Eclipse, NetBeans or IntelliJ Community edition.
+### A Java 8 SDK (or newer)
+The application runs on a Java 8 Virtual Machine, so you must have a working installation on your computer. The project 
+uses Gradle as build tool. You do not need to have Gradle installed prior to building the project, because it will download
+itself automatically. However, you do need git installed on your machine.
 
-First you need to clone the playlist project from Github.com. You can do this from the commandline or from your IDE. The
-clone URL is https://github.com/dschoorl/playlists.git. It is a maven project and your IDE probably supports this  
-build tool out of the box. The project has a simple structure: it contains no sub modules. Open or import the project 
-into your IDE.
+First you need to clone the playlist project from Github.com to your local machine. You can do this from the commandline 
+or from your favourite IDE (if your are a software developer)). The clone URL is https://github.com/dschoorl/playlists.git.
 
-Edit the source file, located at the following path in your git workspace: `src/main/java/info/rsdev/playlists/Playlists.java`. At the bottom of the file, in the method `start`, you can change the year for which you want to 
-create or update a playlist on Spotify. Change the value to your needs, save the file and recompile the project.
+From the commandline, go into the 'playlist' subdirectory that was created by the git-clone command. This is the project
+directory. From here you can build and run the application.
 
-Run the project as a Java application from your IDE and read the following section.
+Execute the following command to build the project:   
+On Windows: ```./gradelw.bat build ```   
+On Mac/Linux: ```./gradlew build```
+
+This will create a fat jar in the sub directory called ```build/libs``` that can be executed with the ```java -jar``` 
+command. The name of the file contains a version number in it, the current version is 0.0.2-SNAPSHOT. When you execute it,
+you must pass the year on for which you want to compile a spotify playlist. E.g. to run the application for the year 
+1999, you would enter from the project directory:   
+On Windows: ```java -jar build\libs\playlists-0.0.2-SNAPSHOT.jar 1999```   
+On Mac/Linux: ```java -jar build/libs/playlists-0.0.2-SNAPSHOT.jar 1999```
+
+Please continue reading the next section where it is explained what the application is doing or trying to do.
 
 #### Running - obtain a (temporary) Spotify accessToken
 When you run the application, it needs a valid accessToken to access Spotify. Unfortunately, this process can not be done 
@@ -157,7 +166,52 @@ the Class `Playlists.java`. It will log some interesting details and terminate w
 If you now open your spotify client, you can see a new (or updated) playlist with the name '<year> charted songs'. If 
 you configured the Playlists.java class that this should be 2018, then the playlist is titled '2018 charted songs'.
 
-You need to follow this procedure again for each year you want to create a playlist for.
+You need to follow this procedure again for each year you want to create a playlist for. 
+
+When all prerequisites have met, the program would output something like below for the year 2018:
+```
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v2.1.0.RELEASE)
+
+2018-11-21 09:53:51.471  INFO 8913 --- [           main] i.rsdev.playlists.Playlists$Companion    : Starting Playlists.Companion
+2018-11-21 09:53:51.474  INFO 8913 --- [           main] i.rsdev.playlists.Playlists$Companion    : No active profile set, falling back to default profiles: default
+2018-11-21 09:53:53.043  INFO 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Read 745 cache entries from file
+2018-11-21 09:53:53.202  INFO 8913 --- [           main] i.rsdev.playlists.Playlists$Companion    : Started Playlists.Companion in 2.038 seconds (JVM running for 2.482)
+2018-11-21 09:53:53.203  INFO 8913 --- [           main] info.rsdev.playlists.Playlists           : Program arguments: [2018]
+2018-11-21 09:53:53.427  WARN 8913 --- [           main] i.r.p.services.MusicChartsService        : Datastore contains data for TOP40 from 2018, week 46
+2018-11-21 09:53:53.438  WARN 8913 --- [           main] i.r.p.services.MusicChartsService        : Datastore contains data for TIPPARADE from 2018, week 46
+2018-11-21 09:53:54.362  INFO 8913 --- [           main] i.r.p.services.Top40ScrapeService        : Scraped week 46 of Top 40 2018
+2018-11-21 09:53:55.510  INFO 8913 --- [           main] i.r.p.services.Top40ScrapeService        : Scraped week 46 of Tipparade 2018
+2018-11-21 09:53:55.573  INFO 8913 --- [           main] info.rsdev.playlists.Playlists           : Datastore initialized after 2s
+2018-11-21 09:53:55.709  INFO 8913 --- [           main] i.r.playlists.services.PlaylistService   : Searching for 310 titles in playlist 2018 charted songs
+2018-11-21 09:53:56.900 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Drake, title=God's plan) with q='drake track:god's plan'
+2018-11-21 09:54:00.508 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Selena Gomez, title=Back 2 you '18) with q='gomez selena track:'18 2 back you'
+2018-11-21 09:54:01.560 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Snow Patrol, title=Don't give in) with q='patrol snow track:don't give in'
+2018-11-21 09:54:01.998 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Arlissa and Jonas Blue, title=Hearts ain't gonna lie) with q='arlissa blue jonas track:ain't gonna hearts lie'
+2018-11-21 09:54:02.979 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Marco Borsato & André Hazes & Nick & Simon & Jeroen Van Koningsbrugge & Diggy Dex & Xander De Buisonjé & VanVelzen, title=Vrienden - Themasong De Vrienden Van Amstel Live!) with q='andré borsato buisonjé de dex diggy hazes jeroen koningsbrugge marco nick simon van vanvelzen xander track:amstel live! themasong vrienden'
+2018-11-21 09:54:03.852 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=SFB/Ronnie Flex, title=One time) with q='flex sfb/ronnie track:one time'
+2018-11-21 09:54:04.129 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Lucas & Steve x Janieck, title=You don't have to like it) with q='janieck lucas steve track:don't have it like to you'
+2018-11-21 09:54:04.979 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Labrinth & Sia & Diplo present... LSD, title=Thunderclouds) with q='diplo labrinth lsd present... sia track:thunderclouds'
+2018-11-21 09:54:05.027 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=CMC$ & Grx feat. Icona Pop, title=X's) with q='cmc$ grx icona pop track:x's'
+2018-11-21 09:54:05.092 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Guwop x Mars x Kodak, title=Wake up in the sky) with q='guwop kodak mars track:in sky up wake'
+2018-11-21 09:54:06.478 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=P.T.M., title=Live in the moment) with q='p.t.m. track:in live moment'
+2018-11-21 09:54:06.873 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=SFB & Murda & Spanker, title=Shutdown) with q='murda sfb spanker track:shutdown'
+2018-11-21 09:54:07.585 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=XXX Tentacion x Lil Pump feat Maluma & Swae Lee, title=Arms Around You) with q='lee lil maluma pump swae tentacion xxx track:arms around you'
+2018-11-21 09:54:07.773 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Juice Wrld, title=Lucid dreams (forget me)) with q='juice wrld track:dreams forget lucid me'
+2018-11-21 09:54:07.823 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Ali B, R3hab, Numidia & Cheb Raya, title=Dana) with q='ali b cheb numidia r3hab raya track:dana'
+2018-11-21 09:54:08.229  WARN 8913 --- [           main] i.r.playlists.services.PlaylistService   : Found 295 / of 310 on spotify
+2018-11-21 09:54:08.600  INFO 8913 --- [           main] i.r.playlists.services.PlaylistService   : Added 295 songs to playlist 2018 charted songs
+2018-11-21 09:54:08.600  INFO 8913 --- [           main] info.rsdev.playlists.Playlists           : Finished: 15s
+
+```
+
+The program keeps running, although it's doing nothing and you need to stop it with Ctrl-C. If you would check your 
+Spotify account now, you would see a playlist called  '_2018 charted songs_' that was filled by the playlists application.. 
 
 ## Status
 The program works for me, because I know how to handle and run it. I tried to explain setup and running as good as 
@@ -166,15 +220,19 @@ purposes, so I have a return on investment of 4 years. I consider that to be pre
 new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-database, but also JSoup and 
 Spotify-web-api to name a few smaller frameworks that were new to me.
 
-I have some ideas to add to the program, like
-1. provide startup parameters instead of re-program hardcodes values in the source files
+I will continue to support this project, to try out new technologies. Recent changes I have applied is switching from
+Java to Kotlin as the programming language and switching from the Maven build tool to Gradle. I also added Spring Boot 
+to the mix, all tachnologies that I want to get experience with. The next big thing I want to do is add a GUI for 
+improved user experience. This will probably be a Javascript framework like Angular.
+
+I have some additional ideas to add to the program, more in the area of functional requirements, like
 1. Improve the algorithm that detects if a song is already in a playlist or not
 1. Support more music charts, like Billboard etc.
 1. Support more music providers, like Deezer, Apple music or Google play.
 1. Provide GUI to visually compile playlists from custom queries on the elastic search database
 
-But I probably do not have the time to implement them, due to other plans and commitments. However, I am open to 
-receive pull requests with your stuff that makes the application more usefull for other people.
+If you would like to help, send me a message. Let me know what you want to do and what information you need to get you 
+started. And submit your changes for review via a pull request.
 
 I hope you enjoy this project.
 
