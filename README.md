@@ -12,9 +12,9 @@ I thought a song was awesome, I added it to a playlist called "Good and better" 
 for popmusic.
 
 I timed my efforts to compile the playlist on spotify and I estimated that it took me about 4 hours per quarter, that 
-is 16 hours per year. I have done this now for about a decade, and the nerd in me wants to be complete, so I have a 
-couple of more decades to go. That amounts to a really large number of hours compiling playlists, that I can also spent 
-in better ways.
+is 16 hours per year. I have done this now for ten volumes of the top40, and the nerd in me wants to be complete, so I 
+have a couple of more volumes to go. That amounts to a really large number of hours compiling playlists, that I can also 
+spent in better ways.
 
 Thus, one day, I thought that maybe I should automate the process. This little program is the result. 
 

@@ -18,15 +18,16 @@ package info.rsdev.playlists.dao
 import info.rsdev.playlists.domain.ChartsItem
 import info.rsdev.playlists.domain.Song
 import info.rsdev.playlists.services.MusicChart
-import org.elasticsearch.action.ActionListener
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 import org.elasticsearch.action.bulk.BulkProcessor
 import org.elasticsearch.action.bulk.BulkRequest
 import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.update.UpdateRequest
+import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
+import org.elasticsearch.client.indices.CreateIndexRequest
+import org.elasticsearch.client.indices.CreateIndexResponse
+import org.elasticsearch.client.indices.GetIndexRequest
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.unit.ByteSizeUnit
 import org.elasticsearch.common.unit.ByteSizeValue
@@ -35,13 +36,11 @@ import org.elasticsearch.common.xcontent.XContentBuilder
 import org.elasticsearch.common.xcontent.XContentFactory
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval.WEEK
-import org.elasticsearch.search.aggregations.metrics.max.ParsedMax
+import org.elasticsearch.search.aggregations.metrics.ParsedMax
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
-import java.util.function.BiConsumer
 import javax.inject.Inject
 
 class ElasticBulkWritingChartsItemDao @Inject
@@ -89,7 +88,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
         }
 
     init {
-        this.bulkProcessor = BulkProcessor.builder(BiConsumer<BulkRequest, ActionListener<BulkResponse>> { bulkRequest, listener -> elasticsearchClient.bulkAsync(bulkRequest, listener) }, listener)
+        this.bulkProcessor = BulkProcessor.builder({ bulkRequest, listener -> elasticsearchClient.bulkAsync(bulkRequest, RequestOptions.DEFAULT, listener) }, listener)
                 .setBulkActions(-1)
                 .setBulkSize(ByteSizeValue(5L, ByteSizeUnit.MB))
                 .setConcurrentRequests(3)
@@ -106,10 +105,9 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
     }
 
     private fun doesChartsItemIndexExist(): Boolean {
-        // Implemented with the low level REST client, because the high level client (v6.2.2) not (yet) supports the IndicesExistsRequest
         try {
-            val response = elasticsearchClient.lowLevelClient.performRequest("HEAD", CHARTSITEM_INDEX_NAME)
-            return response.statusLine.statusCode == 200
+            val indexRequest = GetIndexRequest(CHARTSITEM_INDEX_NAME)
+            return elasticsearchClient.indices().exists(indexRequest, RequestOptions.DEFAULT)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -122,11 +120,11 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
                 .put("index.number_of_shards", 1)
                 .put("index.number_of_replicas", 0))
 
-        request.mapping(CHARTSITEM_DOCTYPE, chartsItemMapping)
+        request.mapping(chartsItemMapping)
 
         val response: CreateIndexResponse
         try {
-            response = elasticsearchClient.indices().create(request)
+            response = elasticsearchClient.indices().create(request, RequestOptions.DEFAULT)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -138,7 +136,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
     }
 
     override fun saveOrUpdate(chartsItem: ChartsItem) {
-        val request = UpdateRequest(CHARTSITEM_INDEX_NAME, CHARTSITEM_DOCTYPE, UUID.randomUUID().toString())
+        val request = UpdateRequest(CHARTSITEM_INDEX_NAME, UUID.randomUUID().toString())
         request.docAsUpsert(true)
         request.doc(toContentBuilder(chartsItem))
         this.bulkProcessor.add(request)
@@ -168,7 +166,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
         }
 
         val searchRequest = makeSearchRequestReleasesByYear(year, expectedResults)
-        val searchResponse = elasticsearchClient.search(searchRequest)
+        val searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT)
         val releases = LinkedHashSet<Song>()
         searchResponse.hits.forEach { searchHit -> releases.add(makeSong(searchHit.sourceAsMap)) }
         return releases
@@ -183,8 +181,8 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
     private fun getReleasesCount(year: Short, roundFactor: Int): Int {
         val searchRequest = makeSearchRequestReleasesByYear(year, RETURN_NO_DOCUMENTS)
         try {
-            val searchResponse = elasticsearchClient.search(searchRequest)
-            var elasticSearchResultCount = searchResponse.hits.getTotalHits()
+            val searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT)
+            var elasticSearchResultCount = searchResponse.hits.totalHits.value  //TODO:reinterpret -> could be more than...
             if (elasticSearchResultCount == 0L) {
                 return 0
             }
@@ -201,7 +199,6 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
 
     private fun makeSearchRequestReleasesByYear(year: Short, limitResults: Int): SearchRequest {
         val searchRequest = SearchRequest(CHARTSITEM_INDEX_NAME)
-        searchRequest.types(CHARTSITEM_DOCTYPE)
         val searchSourceBuilder = SearchSourceBuilder()
         searchSourceBuilder.size(limitResults)
         searchSourceBuilder.storedFields(Arrays.asList(ARTIST, TITLE))
@@ -219,7 +216,6 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
 
     override fun getHighestYearStored(chart: MusicChart): Short {
         val searchRequest = SearchRequest(CHARTSITEM_INDEX_NAME)
-        searchRequest.types(CHARTSITEM_DOCTYPE)
         val searchSourceBuilder = SearchSourceBuilder()
         searchSourceBuilder.storedFields(Arrays.asList(CHARTNAME, YEAR))
         searchSourceBuilder.size(0)
@@ -232,7 +228,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
         searchRequest.source(searchSourceBuilder)
 
         try {
-            val searchResponse = elasticsearchClient.search(searchRequest)
+            val searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT)
             val result = searchResponse.aggregations.get<ParsedMax>("maxYear")
             return if (java.lang.Double.isInfinite(result.value)) {
                 -1
@@ -247,7 +243,6 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
 
     override fun getHighestWeekStored(chart: MusicChart, year: Short): Byte {
         val searchRequest = SearchRequest(CHARTSITEM_INDEX_NAME)
-        searchRequest.types(CHARTSITEM_DOCTYPE)
         val searchSourceBuilder = SearchSourceBuilder()
         searchSourceBuilder.storedFields(Arrays.asList(CHARTNAME, YEAR, WEEK))
         searchSourceBuilder.size(0)
@@ -264,7 +259,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
         searchRequest.source(searchSourceBuilder)
 
         try {
-            val searchResponse = elasticsearchClient.search(searchRequest)
+            val searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT)
             val result = searchResponse.aggregations.get<ParsedMax>("maxWeek")
             return if (java.lang.Double.isInfinite(result.value)) {
                 -1

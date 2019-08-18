@@ -15,12 +15,10 @@
  */
 package info.rsdev.playlists
 
-import com.vividsolutions.jts.geom.Dimension.L
 import info.rsdev.playlists.services.MusicTitleService
 import info.rsdev.playlists.services.PlaylistService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import java.time.LocalDate
