@@ -15,7 +15,6 @@
  */
 package info.rsdev.playlists.ioc
 
-import info.rsdev.playlists.Playlists
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -29,11 +28,6 @@ import info.rsdev.playlists.services.PlaylistService
 @Configuration
 @Import(SpringCommonConfig::class)
 open class SpringPlaylistsConfig {
-
-//    @Bean
-//    internal fun playlists(): Playlists {
-//        return Playlists()
-//    }
 
     @Bean
     internal fun playlistService(): PlaylistService {

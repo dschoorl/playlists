@@ -60,6 +60,8 @@ object QueryStringComposer {
         val artistWords =  normalizeArtist(song)
         titleWords.removeAll(artistWords)
 
+        //TODO: strip punctuation marks
+
         return titleWords
     }
 

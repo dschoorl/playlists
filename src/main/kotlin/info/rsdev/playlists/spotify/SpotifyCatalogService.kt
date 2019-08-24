@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.services
+package info.rsdev.playlists.spotify
 
 import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
@@ -24,11 +24,8 @@ import com.wrapper.spotify.model_objects.specification.*
 import info.rsdev.playlists.domain.CatalogPlaylist
 import info.rsdev.playlists.domain.Song
 import info.rsdev.playlists.domain.SongFromCatalog
-import info.rsdev.playlists.spotify.PlaylistIterator
-import info.rsdev.playlists.spotify.PlaylistTrackIterator
-import info.rsdev.playlists.spotify.QueryCache
+import info.rsdev.playlists.services.MusicCatalogService
 import info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString
-import info.rsdev.playlists.spotify.TooManyRequestsExceptionHandler
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
@@ -57,20 +54,19 @@ open class SpotifyCatalogService(clientId: String, clientSecret: String, accessT
     }
 
     override fun findSong(song: Song): SongFromCatalog? {
-        val query = makeQueryString(song)
-        var result = queryCache.getFromCache(query)
+        var result = queryCache.getFromCache(song)
         var cacheHit = false
         if (result == null) {
-            result = searchSpotifyForSong(song, query)
+            result = searchSpotifyForSong(song)
             //do not cache nulls when song is not found on spotify, since I am trying to improve my search query
-            result?.let { spotifySong -> queryCache.cache(query, spotifySong) }
-        } else if (LOGGER.isTraceEnabled) {
+            result?.let { spotifySong -> queryCache.cache(song, spotifySong) }
+        } else {
             cacheHit = true
         }
 
         if (LOGGER.isDebugEnabled) {
             if (result == null) {
-                LOGGER.debug("Not found on Spotify: $song with q='$query'")
+                LOGGER.debug("Not found on Spotify: $song")
             } else {
                 if (LOGGER.isTraceEnabled) {
                     LOGGER.trace("Found (cacheHit=$cacheHit): $result")
@@ -82,7 +78,9 @@ open class SpotifyCatalogService(clientId: String, clientSecret: String, accessT
     }
 
     @Throws(IOException::class, SpotifyWebApiException::class)
-    internal fun searchSpotifyForSong(song: Song, queryString: String): SongFromCatalog? {
+    internal fun searchSpotifyForSong(song: Song): SongFromCatalog? {
+        //TODO: introduce a search strategy class which allows for more compex algorithms
+        val queryString = makeQueryString(song)
         val searchResult = executeSearchOnSpotify(queryString)
         val hits = searchResult.total!!
         return if (hits == 0) {

@@ -33,9 +33,8 @@ import info.rsdev.playlists.services.MusicCatalogService
 import info.rsdev.playlists.services.MusicChartsService
 import info.rsdev.playlists.services.MusicTitleService
 import info.rsdev.playlists.services.ScrapeService
-import info.rsdev.playlists.services.SpotifyCatalogService
+import info.rsdev.playlists.spotify.SpotifyCatalogService
 import info.rsdev.playlists.services.Top40ScrapeService
-import kotlin.String.Companion
 
 /**
  *
