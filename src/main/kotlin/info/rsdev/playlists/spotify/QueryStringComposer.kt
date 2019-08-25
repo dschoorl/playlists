@@ -28,7 +28,8 @@ object QueryStringComposer {
     private val ARTIST_NOISE_WORDS = hashSetOf("the", "with", "and", "x", "+", "vs", "vs.")
     private val TITLE_NOISE_WORDS = hashSetOf("the", "a", "de", "-", "radio", "edit", "mix", "single")
     private val ARTIST_ALIASSES = hashMapOf("atc" to "a touch of class",
-            "beegees" to "bee gees", "scr!pt" to "script")
+            "beegees" to "bee gees", "scr!pt" to "script", "p!nk" to "pink")
+    private val punctuationMarks = ",.!?'\""
 
     /**
      * The fieldname in the query string that is appended before the artists keywords. As a result, the artist keywords
@@ -51,7 +52,8 @@ object QueryStringComposer {
     }
 
     fun normalizeTitle(song: Song): SortedSet<String> {
-        val title = chooseOneWhenThereIsDoubleASide(song.title)
+        var title = chooseOneWhenThereIsDoubleASide(song.title)
+        title = stripPunctuation(title)
         val titleWords = splitToLowercaseWords(title)
         titleWords.removeAll(TITLE_NOISE_WORDS)
         titleWords.removeAll(CREDITS_NOISE_WORDS)
@@ -60,9 +62,17 @@ object QueryStringComposer {
         val artistWords =  normalizeArtist(song)
         titleWords.removeAll(artistWords)
 
-        //TODO: strip punctuation marks
-
         return titleWords
+    }
+
+    private fun stripPunctuation(text: String): String {
+        val sb = StringBuilder(text.length)
+        for (c in text) {
+            if (!(c in punctuationMarks)) {
+                sb.append(c)
+            }
+        }
+        return sb.toString()
     }
 
     @Throws(UnsupportedEncodingException::class)

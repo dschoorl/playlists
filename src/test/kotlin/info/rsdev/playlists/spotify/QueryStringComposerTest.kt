@@ -35,6 +35,12 @@ class QueryStringComposerTest {
     }
 
     @Test
+    fun stripPuctuationFromTitle() {
+        val queryString = QueryStringComposer.makeQueryString(Song("abt", "don't stop"))
+        assertEquals("abt track:dont stop", queryString)
+    }
+
+    @Test
     fun orderKeyWordsArtistAndTitleAlphabetically() {
         //this is done to make test asserts easier
         val queryString = QueryStringComposer.makeQueryString(Song("zero downtime", "three two one"))

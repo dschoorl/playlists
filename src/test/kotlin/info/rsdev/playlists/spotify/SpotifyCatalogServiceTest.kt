@@ -16,11 +16,19 @@ import kotlin.test.assertNotNull
 @ContextConfiguration(classes = [SpringCommonConfig::class])
 class SpotifyCatalogServiceTest(@Autowired val subjectUnderTest: SpotifyCatalogService) {
 
+    private val songsToTest = HashSet<Song>()
+    init {
+        with(songsToTest) {
+            add(Song("Bruno Mars & Cardi B", "Finesse"))
+            add(Song("atb", "don't stop!"))
+            add(Song("Jay-Z featuring Amil (Of Major Coinz) and Ja Rule", "Can I Get A ..."))
+        }
+    }
+
     @Test
     fun findSong() {
         LOGGER.info("Start test")
         val song = Song("Bruno Mars & Cardi B", "Finesse")
-//        val song = Song("atb", "don't stop!")
         val searchHit = subjectUnderTest.findSong(song)
         assertNotNull(searchHit)
     }
