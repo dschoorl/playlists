@@ -233,7 +233,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
             return if (java.lang.Double.isInfinite(result.value)) {
                 -1
             } else {
-                result.value.toShort()
+                result.value.toInt().toShort()
             }
         } catch (e: IOException) {
             throw RuntimeException(e)
@@ -264,7 +264,7 @@ constructor(private val elasticsearchClient: RestHighLevelClient) : ChartsItemDa
             return if (java.lang.Double.isInfinite(result.value)) {
                 -1
             } else {
-                result.value.toByte()
+                result.value.toInt().toByte()
             }
         } catch (e: IOException) {
             throw RuntimeException(e)

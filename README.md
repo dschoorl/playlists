@@ -112,12 +112,12 @@ Execute the following command to build the project:
 On Windows: ```gradelw.bat build ```   
 On Mac/Linux: ```./gradlew build```
 
-This will create a fat jar in the sub directory called ```build/libs``` that can be executed with the ```java -jar``` 
+This will create a fat jar in the sub directory called `build/libs` that can be executed with the `java -jar` 
 command. The name of the file contains a version number in it, the current version is 0.0.2-SNAPSHOT. When you execute it,
 you must pass the year on for which you want to compile a spotify playlist. E.g. to run the application for the year 
 1999, you would enter from the project directory:   
-On Windows: ```java -jar build\libs\playlists-0.0.2-SNAPSHOT.jar 1999```   
-On Mac/Linux: ```java -jar build/libs/playlists-0.0.2-SNAPSHOT.jar 1999```
+On Windows: `java -jar build\libs\playlists.jar 1999`   
+On Mac/Linux: `java -jar build/libs/playlists.jar 1999`   
 
 Please continue reading the next section where it is explained what the application is doing or trying to do.
 

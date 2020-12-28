@@ -24,11 +24,15 @@ import java.util.TreeSet
 object QueryStringComposer {
 
     // all entries must be lower case
-    private val CREDITS_NOISE_WORDS = hashSetOf("feat", "feat.", "featuring", "ft.", "ft")
+    private val CREDITS_NOISE_WORDS = hashSetOf("feat", "feat.", "featuring", "ft.", "ft", "mmv", "m.m.v.")
     private val ARTIST_NOISE_WORDS = hashSetOf("the", "with", "and", "x", "+", "vs", "vs.")
     private val TITLE_NOISE_WORDS = hashSetOf("the", "a", "de", "-", "radio", "edit", "mix", "single")
-    private val ARTIST_ALIASSES = hashMapOf("atc" to "a touch of class",
-            "beegees" to "bee gees", "scr!pt" to "script", "p!nk" to "pink")
+    private val ARTIST_ALIASSES = hashMapOf(
+            "atc" to "a touch of class",
+            "beegees" to "bee gees",
+            "scr!pt" to "script",
+            "p!nk" to "pink",
+            "abba*teens" to "a*teens")
     private val punctuationMarks = ",.!?'\""
 
     /**

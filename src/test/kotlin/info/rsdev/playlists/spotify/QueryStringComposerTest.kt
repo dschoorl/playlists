@@ -41,6 +41,12 @@ class QueryStringComposerTest {
     }
 
     @Test
+    fun resolveArtistAliasses() {
+        val queryString = QueryStringComposer.makeQueryString(Song("ABBA*Teens", "Mamma Mia"))
+        assertEquals("a*teens track:mamma mia", queryString)
+    }
+
+    @Test
     fun orderKeyWordsArtistAndTitleAlphabetically() {
         //this is done to make test asserts easier
         val queryString = QueryStringComposer.makeQueryString(Song("zero downtime", "three two one"))
