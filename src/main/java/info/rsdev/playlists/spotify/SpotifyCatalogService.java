@@ -15,24 +15,35 @@
  */
 package info.rsdev.playlists.spotify;
 
-import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.exceptions.detailed.TooManyRequestsException;
-import com.wrapper.spotify.exceptions.detailed.UnauthorizedException;
-import com.wrapper.spotify.model_objects.special.SnapshotResult;
-import com.wrapper.spotify.model_objects.specification.*;
-import info.rsdev.playlists.domain.CatalogPlaylist;
-import info.rsdev.playlists.domain.Song;
-import info.rsdev.playlists.domain.SongFromCatalog;
-import info.rsdev.playlists.services.MusicCatalogService;
 import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import info.rsdev.playlists.domain.CatalogPlaylist;
+import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.domain.SongFromCatalog;
+import info.rsdev.playlists.services.MusicCatalogService;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.exceptions.detailed.TooManyRequestsException;
+import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
+import se.michaelthelin.spotify.model_objects.special.SnapshotResult;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.Playlist;
+import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Track;
+import se.michaelthelin.spotify.model_objects.specification.User;
 
 public class SpotifyCatalogService implements MusicCatalogService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyCatalogService.class);
@@ -61,7 +72,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
     private Optional<User> getCurrentUser() {
         try {
             return Optional.ofNullable(spotifyApi.getCurrentUsersProfile().build().execute());
-        } catch (IOException | SpotifyWebApiException e) {
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
             LOGGER.error("Could not obtain CurrentUserProfile", e);
             return Optional.empty();
         }
@@ -107,8 +118,9 @@ public class SpotifyCatalogService implements MusicCatalogService {
                 searchResult = searchRequest.execute();
             } catch (TooManyRequestsException e) {
                 TooManyRequestsExceptionHandler.handle(LOGGER, searchRequest.getClass().getSimpleName(), e);
-            }
-
+            } catch (ParseException e) {
+				throw new RuntimeException(e);
+			}
         }
         return searchResult;
     }
@@ -145,7 +157,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
         var createRequest = spotifyApi.createPlaylist(currentUser.getId(), newPlaylistName).build();
         try {
             return makePlaylist(createRequest.execute());
-        } catch (IOException | SpotifyWebApiException e) {
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new RuntimeException(e);
         }
     }
@@ -187,14 +199,16 @@ public class SpotifyCatalogService implements MusicCatalogService {
     }
 
     private SnapshotResult addToPlaylistOnSpotify(String playlistId, String[] trackIds) throws IOException, SpotifyWebApiException {
-        var request = spotifyApi.addTracksToPlaylist(currentUser.getId(), playlistId, trackIds).build();
+        var request = spotifyApi.addItemsToPlaylist(playlistId, trackIds).build();
         SnapshotResult response = null;
         while (response == null) {
             try {
                 response = request.execute();
             } catch (TooManyRequestsException e) {
                 TooManyRequestsExceptionHandler.handle(LOGGER, request.getClass().getSimpleName(), e);
-            }
+            } catch (ParseException e) {
+				throw new RuntimeException(e);
+			}
         }
         return response;
     }
@@ -205,7 +219,11 @@ public class SpotifyCatalogService implements MusicCatalogService {
         var songsFromCatalog = new ArrayList<SongFromCatalog>(trackIterator.size());
         while (trackIterator.hasNext()) {
             var track = trackIterator.next().getTrack();
-            songsFromCatalog.add(makeSongFromCatalog(track));
+            if (track instanceof Track) {
+            	songsFromCatalog.add(makeSongFromCatalog((Track)track));
+            } else {
+            	LOGGER.warn("Cannot add unsupported IPlaylistItem to playlist: " + track);
+            }
         }
         return songsFromCatalog;
     }

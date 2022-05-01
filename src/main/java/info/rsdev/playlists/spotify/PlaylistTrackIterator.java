@@ -1,12 +1,14 @@
 package info.rsdev.playlists.spotify;
 
-import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.specification.Paging;
-import com.wrapper.spotify.model_objects.specification.PlaylistSimplified;
-import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 
 import java.io.IOException;
+
+import org.apache.hc.core5.http.ParseException;
+
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 
 public class PlaylistTrackIterator extends BasePagingIterator<PlaylistTrack> {
 
@@ -22,7 +24,11 @@ public class PlaylistTrackIterator extends BasePagingIterator<PlaylistTrack> {
 
     @Override
     public Paging<PlaylistTrack> getResults(int offset) throws IOException, SpotifyWebApiException {
-        return spotifyApi.getPlaylistsTracks(userId, playlistId).offset(offset).build().execute();
+        try {
+			return spotifyApi.getPlaylistsItems(playlistId).offset(offset).build().execute();
+		} catch (ParseException | SpotifyWebApiException | IOException e) {
+			throw new RuntimeException(e);
+		}
     }
 
         //Factory method

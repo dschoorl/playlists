@@ -1,7 +1,8 @@
 package info.rsdev.playlists.spotify;
 
-import com.wrapper.spotify.exceptions.detailed.TooManyRequestsException;
 import org.slf4j.Logger;
+
+import se.michaelthelin.spotify.exceptions.detailed.TooManyRequestsException;
 
 public class TooManyRequestsExceptionHandler {
 
