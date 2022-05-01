@@ -17,7 +17,9 @@ package info.rsdev.playlists.ioc;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+
 import javax.inject.Inject;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -25,15 +27,14 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
-import com.wrapper.spotify.exceptions.detailed.UnauthorizedException;
-
 import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.services.MusicCatalogService;
 import info.rsdev.playlists.services.MusicChartsService;
 import info.rsdev.playlists.services.MusicTitleService;
 import info.rsdev.playlists.services.ScrapeService;
-import info.rsdev.playlists.spotify.SpotifyCatalogService;
 import info.rsdev.playlists.services.Top40ScrapeService;
+import info.rsdev.playlists.spotify.SpotifyCatalogService;
+import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
 
 /**
  *
