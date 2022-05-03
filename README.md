@@ -7,9 +7,9 @@ Like most people, I love music. But the last couple of years I hardly listen to 
 input of new music being published. And like some people, I am kind of a nerd. So one day, I started to compile a playlist 
 on Spotify per year of all music released in that year. I went over the charts at top40.nl (yes, I am Dutch) and for 
 each week, for every new entry, I looked the song up on spotify, and added it to the playlist. When I completed an annum, 
-I would listen to all the songs in the playlist and rate them. Each song I liked, I added to a playlist called "Nice", but when 
+I would listen to all the songs in the playlist and rate them. Each song I liked, I added to my playlist called "Nice", and when 
 I thought a song was awesome, I added it to a playlist called "Good and better" instead. Those two are my main playlists 
-for popmusic.
+for listening to mainstream pop music.
 
 I timed my efforts to compile the playlist on spotify and I estimated that it took me about 4 hours per quarter, that 
 is 16 hours per year. I have done this now for ten volumes of the top40, and the nerd in me wants to be complete, so I 
@@ -23,7 +23,7 @@ top40.nl does not provide an API to get the weekly charts in an automated fashio
 from internet, extracts the relevant information from it and stores it in a database. Then it can compile a list of all 
 releases in a certain year, create a Spotify playlist and fill it with as much of the songs it can find on Spotify.
 Songs that could not be found are listed in the application log. You can try to manually find them yourself and add it to the playlist. Oftentimes you will succeed, because the artist / title from the music charts sometimes uses a different 
-spelling than Spotify. But sometimes a song is not available, or a song is only available performed by a coverband.
+spelling than Spotify. But sometimes a song is just not available, or a song is only available performed by a coverband.
 
 When you instruct the program multiple times to compile the playlist for the same year, it will never remove songs from 
 the existing playlist, it will only add new songs when they are not already present.
@@ -32,7 +32,7 @@ the existing playlist, it will only add new songs when they are not already pres
 What you need to get this program running, is the following:
 1. A running ElasticSearch database
 1. A clientId that you receive when you register this application with Spotify
-1. A Java 8 SDK (or newer)
+1. A Java 17 SDK (or newer)
 
 Below each requirement is discussed in more detail.
 
@@ -53,7 +53,7 @@ es.hostname=localhost
 es.portnumber=9200
 ```
 
-If your installation requires more complex connection details, you need to change the sourcecode at `info.rsdev.playlists.ioc.SpringDatalayerConfig`. Check the elasticsearch documentation for details.
+If your installation requires more complex connection details, you need to change the sourcecode at `info.rsdev.playlists.ioc.SpringElasticsearchConfig`. Check the elasticsearch documentation for details.
 
 ### A Spotify clientId
 Before the playlists application can access Spotify, you must register it with Spotify and receive a clientId. A 
@@ -66,14 +66,15 @@ clientId is personal information, and you should not share it with others. Compl
 - Fill out the paperwork. Choose the name you like and also select desktop app as type of application and I guess 
   choosing non commercial integration would make sense.
 - When finished, you are taken to the details of the newly created Spotify app. There you see the ClientId. Copy it, you 
-  need this lateron.
+  need this later on.
 - Below that, you see the text "Show client secret". Click on the text to reveal it. A client secret is the password that 
   goes with the clientid. Copy the client secret, you need it lateron.
 - Next, you need to click on the button 'Edit settings' in the same window. It will open the settings of your application 
   as recorded by Spotify. In the settings, you need to add a redirectUrl. The URL is used by Spotify to deliver the
-  accessToken to your application. Normally, the URL would point to your web application and the accessToken would be 
-  processed automatically. But since playlists is a command line application, the accessToken needs to be provided to the 
-  playlists application manually. Therefore, the value you provide for the redirectUrl should be a non-existing url, E.g. 
+  authorization code to your application. Normally, the URL would point to a callback function in your web application and 
+  the authorization code would be processed automatically. But since playlists is a command line application, the 
+  authorization code needs to be provided to the 
+  playlists application via a properties file. Therefore, the value you provide for the redirectUrl should be a non-existing url, E.g. 
   https://playlists.for.me. Fill your (dummy) redirectUrl in at the appropriate place in the settings (don forget to click 
   'Add' (nor 'Save´ at the bottom).
 - You are now done registering the application with Spotify. If you like you can logout.
@@ -84,9 +85,9 @@ Next, we need to pass on the information from Spotify to the playlists program v
   steps back.
 - The spotify.properties file must also contain the property `spotify.redirectUrl`, with the value of the redirectUrl
   that you filled out on Spotify a few steps back.
-- The spotify.properties must also contain a property called `spotify.accessToken`. This is a session token and the 
-  application needs a valid token in order to be able to maintain playlists on behalf of some user. In the section below, 
-  titled 'running', I will explain how to obtain an accessToken. For now you can leave the value empty.
+- The spotify.properties must also contain a property called `spotify.authCode`. This is the authorization code and the 
+  application needs a valid code in order to be able to maintain playlists on behalf of some user. In the section below, 
+  titled 'running', I will explain how to obtain an authorization code. For now you can leave the value empty.
 
 At this point, the spotify.properties file could look something like this:
 
@@ -94,11 +95,11 @@ At this point, the spotify.properties file could look something like this:
 spotify.clientId=e43b7a0a10934c74442fe65abc4d6ee6
 spotify.clientSecret=d08e81fd0bfb9ed0a0007ffd0ff70067
 spotify.redirectUrl=https://playlists.for.me
-spotify.accessToken=
+spotify.authCode=
 ```
 
-### A Java 8 SDK (or newer)
-The application runs on a Java 8 Virtual Machine, so you must have a working installation on your computer. The project 
+### A Java 17 SDK (or newer)
+The application runs on a Java 17 Virtual Machine, so you must have a working installation on your computer. The project 
 uses Gradle as build tool. You do not need to have Gradle installed prior to building the project, because it will download
 itself automatically. However, you do need git installed on your machine.
 
@@ -113,24 +114,23 @@ On Windows: ```gradelw.bat build ```
 On Mac/Linux: ```./gradlew build```
 
 This will create a fat jar in the sub directory called `build/libs` that can be executed with the `java -jar` 
-command. The name of the file contains a version number in it, the current version is 0.0.2-SNAPSHOT. When you execute it,
-you must pass the year on for which you want to compile a spotify playlist. E.g. to run the application for the year 
-1999, you would enter from the project directory:   
+command. When you execute it, you must pass the year on for which you want to compile a spotify playlist. E.g. to 
+run the application for the year 1999, you would enter from the project directory:   
 On Windows: `java -jar build\libs\playlists.jar 1999`   
 On Mac/Linux: `java -jar build/libs/playlists.jar 1999`   
 
 Please continue reading the next section where it is explained what the application is doing or trying to do.
 
-#### Running - obtain a (temporary) Spotify accessToken
-When you run the application, it needs a valid accessToken to access Spotify. Unfortunately, this process can not be done 
-automatically, since playlists is a command line application. The token is obtained by the user manually. A token is 
-usually valid for one hour. After that, you must repeat the authorization proces.
+#### Running - obtain a (temporary) Spotify authorization code
+When you run the application, it needs a valid authorization code to access Spotify. Unfortunately, this process can not be done 
+automatically, since playlists is a command line application. The token is obtained by the user manually. A code is 
+usually valid for one run. After that, you must repeat the authorization proces.
 
-When there is no accessToken, or the token has expired, the application log will show a stacktrace containing a URL 
+When there is no authorization code, or the token has expired, the application log will show a stacktrace containing a URL 
 that you must copy/paste into your web browser. The URL looks something like this:
 
 ```
-https://accounts.spotify.com/authorize?response_type=token&client_id=e43b7a0a10934c74442fe65abc4d6ee6&redirect_uri=https%3A%2F%2Fplaylists.for.me&scope=playlist-read-private%20playlist-modify-private%20playlist-modify
+https://accounts.spotify.com/authorize?response_type=code&client_id=e43b7a0a10934c74442fe65abc4d6ee6&redirect_uri=https%3A%2F%2Fplaylists.for.me&scope=playlist-read-private%20playlist-modify-private%20playlist-modify%20user-read-private%20user-read-email
 ```
 
 When you copy/paste the URL in the address bar of your browser, you are redirected to a Spotify authorization page where 
@@ -142,19 +142,19 @@ spotify.properties file.
 if the url in your browser looks like this:
 
 ```
-https://playlists.for.me/#access_token=BQBRKW4RPjjG1jYmuSRzT2-XwnDg8KOBmqw5GyWNSajjGE-oOL8Mj2T21agl7VnRIXRkUHmKkZc-lUWKAAcgxL-YHOKkcuN4RJBDcNQiIVijXCoCM4weB3Qwu_hW_yOifOzqsbe0SZ6rqlO6gxle_jKJtN75XgaLpfvY7CAAOE3JEhNarVHwDgGLNb4THssC6ipPLAy81w3JfiiLfaFaFOFXJykL21qP62bV&token_type=Bearer&expires_in=3600
+https://playlists.for.me/?code=AQDqz-uel9A0RatFTpHxh0byHzOKtCnj-4aPzFwjNZruUQht7__lTZuqXXxEJQarcnGnx6RRDlDtJsWzdW32msi8FmBAzaEApqm5U_viwngKEbliZa_0BF9t93QBmC5jEJVeO7jhpDYp4mE2_lJn7OH2rx26OTk7p-6SITTNKpXqmgXKazJveuCC9ZRXiUH1XfLlTJWJyZneqWT0yA47uWl3PJFLxcEdXAYr2gDJFK-P7AFukpZBdv7Uje-sqxnXStr46Hbc7XUNymoC7RZlpSzVArrP9UDrWxGe#_=_
 ```
 
-Your spotify.properties should look like this after pasting the accessToken value:
+Your spotify.properties should look like this after pasting the authorization code (if the code ends with `#_=_`, leave those characters off):
 
 ```
 spotify.clientId=e43b7a0a10934c74442fe65abc4d6ee6
 spotify.clientSecret=d08e81fd0bfb9ed0a0007ffd0ff70067
 spotify.redirectUrl=https://playlists.for.me
-spotify.accessToken=BQBRKW4RPjjG1jYmuSRzT2-XwnDg8KOBmqw5GyWNSajjGE-oOL8Mj2T21agl7VnRIXRkUHmKkZc-lUWKAAcgxL-YHOKkcuN4RJBDcNQiIVijXCoCM4weB3Qwu_hW_yOifOzqsbe0SZ6rqlO6gxle_jKJtN75XgaLpfvY7CAAOE3JEhNarVHwDgGLNb4THssC6ipPLAy81w3JfiiLfaFaFOFXJykL21qP62bV
+spotify.authCode=AQDqz-uel9A0RatFTpHxh0byHzOKtCnj-4aPzFwjNZruUQht7__lTZuqXXxEJQarcnGnx6RRDlDtJsWzdW32msi8FmBAzaEApqm5U_viwngKEbliZa_0BF9t93QBmC5jEJVeO7jhpDYp4mE2_lJn7OH2rx26OTk7p-6SITTNKpXqmgXKazJveuCC9ZRXiUH1XfLlTJWJyZneqWT0yA47uWl3PJFLxcEdXAYr2gDJFK-P7AFukpZBdv7Uje-sqxnXStr46Hbc7XUNymoC7RZlpSzVArrP9UDrWxGe
 ```
 
-After replacing the previous spotify.accessToken value in the spotify.property file, you can re-run the application 
+After replacing the previous spotify.authCode value in the spotify.property file, you can re-run the application 
 and it should now be able to connect to Spotify on your behalf.
 
 First thing that the application will do, is go to the website of top40, load all the top-40 and tipparade info from
@@ -219,10 +219,9 @@ purposes, which gives me a return on investment of 4 years. I consider that to b
 new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-database, but also JSoup and 
 Spotify-web-api to name a few smaller frameworks that were new to me.
 
-I will continue to support this project in order to try out new technologies. Recent changes I have applied are switching 
-from Java to Kotlin as the programming language and switching from the Maven build tool to Gradle. I also added Spring 
-Boot to the mix, all tachnologies that I want to get experience with. The next big thing I want to do is add a GUI for 
-improved user experience. This will probably be a Javascript framework like Angular.
+I will continue to support this project. My original goal was to use this project as a playground for new technologies, but recently I am trying to find a balance between productivity and experimenting with new technologies. As a result I switched back from Kotlin to Java 17. 
+
+I would like to add a Web GUI to improve the user experience. This will probably be a Javascript framework like Angular or React.
 
 I have some additional ideas to add to the program, more in the area of functional requirements, like
 1. Improve the algorithm that detects if a song is already in a playlist or not
