@@ -53,7 +53,7 @@ public class Top40ScrapeService implements ScrapeService {
     }
 
     private List<ChartsItem> getChartsItems(Document top40Page) {
-        var listItems = top40Page.select("div.listItem");
+        var listItems = top40Page.select("div#chart-list div:not(.no-longer-listed) > div.listItem");
         List<ChartsItem> chartItems = new ArrayList<>(listItems.size());
 
                 var chartName = getChartName(top40Page);
@@ -66,7 +66,7 @@ public class Top40ScrapeService implements ScrapeService {
                 try {
                     chartItems.add(getChartsItem(listItems.get(i), chartName, year, weekNumber));
                 } catch (RuntimeException e) {
-                    LOGGER.error("Error context [{}}]:\n{}", i, listItems.get(i));
+                    LOGGER.error(String.format("Error context [%d]:%n%s", i, listItems.get(i)), e);
                 }
             }
         }
@@ -105,13 +105,14 @@ public class Top40ScrapeService implements ScrapeService {
     private ChartsItem getChartsItem(Element itemElement, String chartName, short year, byte weekNumber) {
         var songTitle = itemElement.selectFirst("div.song-details h3.title").text();
         var artist = itemElement.selectFirst("div.song-details p.artist").text();
-        var position = java.lang.Byte.parseByte(itemElement.selectFirst("div.dot-icon").text());
+        var position = Byte.parseByte(itemElement.selectFirst("div.dot-icon").text());
         var isNewInChart = isNewInChart(itemElement);
         return new ChartsItem(chartName, year, weekNumber, position, isNewInChart, new Song(artist, songTitle));
     }
 
     private boolean isNewInChart(Element itemElement) {
         var statColumns = itemElement.select("div.statcolumn strong");
+        //get the 'number of weeks in charts' item 
         return (statColumns.size() >= 2)? statColumns.get(1).text().equals("1"): false;
     }
 

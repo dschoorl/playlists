@@ -15,14 +15,18 @@
  */
 package info.rsdev.playlists.services;
 
-import info.rsdev.playlists.domain.Song;
-import info.rsdev.playlists.domain.SongFromCatalog;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
-import java.util.*;
+import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.domain.SongFromCatalog;
 
 /**
  * This service is responsible for creating and updating a playlist hosted at a given [MusicCatalogService]
@@ -35,7 +39,6 @@ public class PlaylistService {
 
     private final MusicCatalogService catalogService;
 
-    @Inject
     public PlaylistService(MusicCatalogService catalogService) {
         this.catalogService = catalogService;
     }

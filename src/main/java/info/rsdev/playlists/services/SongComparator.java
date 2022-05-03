@@ -18,7 +18,6 @@ package info.rsdev.playlists.services;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.spotify.QueryStringComposer;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.Serializable;

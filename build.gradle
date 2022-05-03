@@ -28,13 +28,9 @@ repositories {
 dependencies {
     implementation('org.springframework.boot:spring-boot-starter')
     implementation('org.springframework.boot:spring-boot-starter-logging')
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("javax.inject:javax.inject:1")
-    implementation("org.jsoup:jsoup:1.11.2")
-//    implementation("se.michaelthelin.spotify:spotify-web-api-java:2.1.1")
-	implementation("se.michaelthelin.spotify:spotify-web-api-java:7.0.1")
-    implementation("info.debatty:java-string-similarity:1.1.0")
+    implementation("org.jsoup:jsoup:1.14.3")
+	implementation("se.michaelthelin.spotify:spotify-web-api-java:7.1.0")
+    implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.elasticsearch.client:elasticsearch-rest-high-level-client")
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude module: 'junit'

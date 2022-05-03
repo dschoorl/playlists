@@ -15,7 +15,6 @@
  */
 package info.rsdev.playlists.domain;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
@@ -27,7 +26,7 @@ import java.io.Serializable;
 public record Song(String artist, String title) implements Serializable, Comparable<Song> {
 
     @Override
-    public int compareTo(@NotNull Song other) {
+    public int compareTo(Song other) {
         if (artist.equals(other.artist)) {
             return title.compareTo(other.title);
         }

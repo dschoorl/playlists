@@ -74,7 +74,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 			spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
 			spotifyApi.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
 		} catch (SpotifyWebApiException e) {
-			if (e.getMessage().contains("Authorization")) {
+			if (e.getMessage().toLowerCase().contains("authorization")) {
 				throw new UnauthorizedException("Could not get accessToken nor refreshToken", e);
 			}
 			throw new RuntimeException(e);
