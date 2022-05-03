@@ -16,7 +16,8 @@
 package info.rsdev.playlists.ioc;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.inject.Inject;
 
@@ -34,7 +35,9 @@ import info.rsdev.playlists.services.MusicTitleService;
 import info.rsdev.playlists.services.ScrapeService;
 import info.rsdev.playlists.services.Top40ScrapeService;
 import info.rsdev.playlists.spotify.SpotifyCatalogService;
+import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
+import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 
 /**
  *
@@ -45,40 +48,55 @@ import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
 @Import(SpringElasticsearchConfig.class)
 public class SpringCommonConfig {
 
-    @Inject
-    private Environment env;
+	@Inject
+	private Environment env;
 
-    private String getAccessTokenUrlMessage() throws UnsupportedEncodingException {
-        var clientId = env.getRequiredProperty("spotify.clientId");
-        var redirectUrl = URLEncoder.encode(env.getRequiredProperty("spotify.redirectUrl"), "UTF-8");
-        return String.format("Get your accessToken through your web browser at:%n"
-                + "https://accounts.spotify.com/authorize" +
-                "?response_type=token&client_id=%s&redirect_uri=%s&scope=playlist-read-private%%20playlist-modify-private%%20playlist-modify%%20user-read-private%%20user-read-email%n", clientId, redirectUrl);
-    }
+	private String getAuthorizationCodeUrlMessage() throws UnsupportedEncodingException {
+		SpotifyApi spotifyApi = spotifyApi();
+    	try {
+	    	AuthorizationCodeUriRequest authorizationCodeUriRequest = spotifyApi.authorizationCodeUri()
+	              .scope("playlist-read-private playlist-modify-private playlist-modify user-read-private user-read-email")
+	              .build();
+	    	return String.format("Get your authCode through your web browser at:%n%s%n", authorizationCodeUriRequest.execute());
+    	} catch (Exception e) {
+    		throw new RuntimeException(e);
+    	}
+	}
 
-    @Bean
-    public MusicTitleService singleService(ScrapeService scrapeService, ChartsItemDao chartsItemDao) {
-        return new MusicChartsService(scrapeService, chartsItemDao);
-    }
+	@Bean
+	public MusicTitleService singleService(ScrapeService scrapeService, ChartsItemDao chartsItemDao) {
+		return new MusicChartsService(scrapeService, chartsItemDao);
+	}
 
-    @Bean
-    public ScrapeService scrapeService() {
-        return new Top40ScrapeService();
-    }
+	@Bean
+	public ScrapeService scrapeService() {
+		return new Top40ScrapeService();
+	}
 
-    @Bean
-    public MusicCatalogService catalogService() throws UnsupportedEncodingException {
-        var clientId = env.getRequiredProperty("spotify.clientId");
-        var clientSecret = env.getRequiredProperty("spotify.clientSecret");
-        var accessToken = env.getRequiredProperty("spotify.accessToken");
-        if (!StringUtils.hasText(accessToken)) {
-            throw new RuntimeException(getAccessTokenUrlMessage());
-        }
-        var refreshToken = env.getProperty("spotify.refreshToken");  //currently not supported / needed
-        try {
-            return new SpotifyCatalogService(clientId, clientSecret, accessToken, refreshToken);
-        } catch (UnauthorizedException e) {
-            throw new IllegalStateException(getAccessTokenUrlMessage(), e);
-        }
-    }
+	@Bean
+	public SpotifyApi spotifyApi() {
+		var clientId = env.getRequiredProperty("spotify.clientId");
+		var clientSecret = env.getRequiredProperty("spotify.clientSecret");
+		try {
+			var redirectUrl = new URI(env.getRequiredProperty("spotify.redirectUrl"));
+			return SpotifyApi.builder()
+					.setClientId(clientId)
+					.setClientSecret(clientSecret)
+					.setRedirectUri(redirectUrl)
+					.build();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Bean
+	public MusicCatalogService catalogService() throws UnsupportedEncodingException {
+		var authorizationCode = env.getRequiredProperty("spotify.authCode");
+		if (!StringUtils.hasText(authorizationCode)) { throw new RuntimeException(getAuthorizationCodeUrlMessage()); }
+		try {
+			return new SpotifyCatalogService(spotifyApi(), authorizationCode);
+		} catch (UnauthorizedException e) {
+			throw new IllegalStateException(getAuthorizationCodeUrlMessage(), e);
+		}
+	}
 }

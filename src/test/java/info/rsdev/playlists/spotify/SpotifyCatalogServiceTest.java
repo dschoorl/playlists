@@ -32,7 +32,7 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-//@Disabled("This test is meant for manual execution, because it needs a valid Spotify Token")
+@Disabled("This test is meant for manual execution, because it needs a valid Spotify authorization code")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SpringCommonConfig.class)
 public class SpotifyCatalogServiceTest {
