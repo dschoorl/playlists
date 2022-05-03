@@ -15,16 +15,18 @@
  */
 package info.rsdev.playlists;
 
-import info.rsdev.playlists.services.MusicTitleService;
-import info.rsdev.playlists.services.PlaylistService;
+import java.time.LocalDate;
+
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import java.time.LocalDate;
 
-import javax.inject.Inject;
+import info.rsdev.playlists.services.MusicTitleService;
+import info.rsdev.playlists.services.PlaylistService;
 
 /**
  * @author Dave Schoorl
@@ -34,10 +36,11 @@ public class Playlists implements CommandLineRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Playlists.class);
     private static final String PLAYLIST_NAME_TEMPLATE = "%d charted songs";
-    @Inject
+    
+    @Resource
     private MusicTitleService titleService;
 
-    @Inject
+    @Resource
     private PlaylistService playlistService;
 
     public static void main(String[] args) {

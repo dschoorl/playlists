@@ -15,8 +15,8 @@
  */
 package info.rsdev.playlists.ioc;
 
-import info.rsdev.playlists.dao.ChartsItemDao;
-import info.rsdev.playlists.dao.ElasticBulkWritingChartsItemDao;
+import javax.annotation.Resource;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -25,7 +25,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
-import javax.inject.Inject;
+import info.rsdev.playlists.dao.ChartsItemDao;
+import info.rsdev.playlists.dao.ElasticBulkWritingChartsItemDao;
 
 /**
  *
@@ -35,7 +36,7 @@ import javax.inject.Inject;
 @PropertySource(value = "file:${user.home}/.playlists/elasticsearch.properties")
 public class SpringElasticsearchConfig {
 
-    @Inject
+    @Resource
     private Environment env;
 
     @Bean

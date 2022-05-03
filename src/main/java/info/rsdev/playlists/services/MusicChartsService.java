@@ -15,20 +15,24 @@
  */
 package info.rsdev.playlists.services;
 
-import info.rsdev.playlists.dao.ChartsItemDao;
-import info.rsdev.playlists.domain.Song;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import info.rsdev.playlists.dao.ChartsItemDao;
+import info.rsdev.playlists.domain.Song;
+
 /**
  * This is the default implementation of a {@link MusicTitleService}
  */
+@Component
 public class MusicChartsService implements MusicTitleService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MusicChartsService.class);
@@ -37,7 +41,6 @@ public class MusicChartsService implements MusicTitleService {
 
     private final ChartsItemDao chartsItemDao;
 
-    @Inject
     public MusicChartsService(ScrapeService scrapeService, ChartsItemDao chartsItemDao) {
         this.scrapeService = scrapeService;
         this.chartsItemDao = chartsItemDao;

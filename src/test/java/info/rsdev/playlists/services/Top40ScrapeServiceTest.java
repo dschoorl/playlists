@@ -44,4 +44,10 @@ public class Top40ScrapeServiceTest {
         var hits = serviceUnderTest.scrape(top40DocumentFetcher);
         assertEquals(40, hits.size());
     }
+    
+    @Test
+    public void scrapeTipparade() {
+        var hits = serviceUnderTest.scrape(tipparadeDocumentFetcher);
+        assertEquals(30, hits.size());
+    }
 }

@@ -19,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.inject.Inject;
+import javax.annotation.Resource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +28,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
-import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.services.MusicCatalogService;
-import info.rsdev.playlists.services.MusicChartsService;
-import info.rsdev.playlists.services.MusicTitleService;
 import info.rsdev.playlists.services.ScrapeService;
 import info.rsdev.playlists.services.Top40ScrapeService;
 import info.rsdev.playlists.spotify.SpotifyCatalogService;
@@ -48,7 +45,7 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.Author
 @Import(SpringElasticsearchConfig.class)
 public class SpringCommonConfig {
 
-	@Inject
+	@Resource
 	private Environment env;
 
 	private String getAuthorizationCodeUrlMessage() throws UnsupportedEncodingException {
@@ -61,11 +58,6 @@ public class SpringCommonConfig {
     	} catch (Exception e) {
     		throw new RuntimeException(e);
     	}
-	}
-
-	@Bean
-	public MusicTitleService singleService(ScrapeService scrapeService, ChartsItemDao chartsItemDao) {
-		return new MusicChartsService(scrapeService, chartsItemDao);
 	}
 
 	@Bean
