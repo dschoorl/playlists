@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import info.rsdev.playlists.domain.CatalogPlaylist;
 import info.rsdev.playlists.domain.Song;
@@ -37,15 +38,14 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.exceptions.detailed.TooManyRequestsException;
 import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
-import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.special.SnapshotResult;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.Playlist;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.User;
-import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 
+@Service
 public class SpotifyCatalogService implements MusicCatalogService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyCatalogService.class);
 	private static final int SEGMENT_SIZE = 50;
@@ -56,31 +56,20 @@ public class SpotifyCatalogService implements MusicCatalogService {
 
 	private User currentUser;
 
-	public SpotifyCatalogService(SpotifyApi spotifyApi, String authorizationCode) throws UnauthorizedException {
+	public SpotifyCatalogService(SpotifyApi spotifyApi, SpotifyAuthorizor authorizor) {
 		this.spotifyApi = spotifyApi;
-		authorize(authorizationCode);
-		this.currentUser = getCurrentUser().orElseThrow(UnauthorizedException::new);
+		
+		try {
+			authorizor.authorize(spotifyApi);
+			this.currentUser = getCurrentUser().orElseThrow(UnauthorizedException::new);
+		} catch (UnauthorizedException e) {
+			throw new IllegalStateException(authorizor.getAuthorizationCodeUrlMessage(spotifyApi), e);
+		}
+		
 		LOGGER.info("Logged in user: {}", this.currentUser.getDisplayName());
 
 		this.queryCache = new QueryCache();
 		LOGGER.info("Read {} cache entries from file", queryCache.size());
-	}
-
-	private void authorize(String authorizationCode) throws UnauthorizedException {
-		AuthorizationCodeRequest authorizationCodeRequest = spotifyApi.authorizationCode(authorizationCode).build();
-		try {
-			AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRequest.execute();
-			// Set access and refresh token for further "spotifyApi" object usage
-			spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
-			spotifyApi.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
-		} catch (SpotifyWebApiException e) {
-			if (e.getMessage().toLowerCase().contains("authorization")) {
-				throw new UnauthorizedException("Could not get accessToken nor refreshToken", e);
-			}
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	private Optional<User> getCurrentUser() {
@@ -234,7 +223,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	@Override
 	public Collection<SongFromCatalog> getTracksInPlaylist(CatalogPlaylist playlist)
 			throws IOException, SpotifyWebApiException {
-		var trackIterator = PlaylistTrackIterator.create(spotifyApi, currentUser.getId(), playlist.playlistId());
+		var trackIterator = PlaylistTrackIterator.create(spotifyApi, playlist.playlistId());
 		var songsFromCatalog = new ArrayList<SongFromCatalog>(trackIterator.size());
 		while (trackIterator.hasNext()) {
 			var track = trackIterator.next().getTrack();
