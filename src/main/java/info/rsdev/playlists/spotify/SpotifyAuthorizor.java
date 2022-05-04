@@ -91,7 +91,7 @@ public class SpotifyAuthorizor {
 			return new AccessAndRefreshTokens(accessToken, refreshToken);
 		} catch (SpotifyWebApiException e) {
 			if (e.getMessage().toLowerCase().contains("authorization")) {
-				throw new UnauthorizedException("Could not get accessToken nor refreshToken", e);
+				throw new UnauthorizedException(getAuthorizationCodeUrlMessage(spotifyApi), e);
 			}
 			throw new RuntimeException(e);
 		} catch (Exception e) {

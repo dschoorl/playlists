@@ -16,6 +16,7 @@
 package info.rsdev.playlists;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 
@@ -51,16 +52,16 @@ public class Playlists implements CommandLineRunner {
     public void run(String... args) throws Exception {
         var startTime = System.currentTimeMillis();
 
-        LOGGER.info("Program arguments: ${Arrays.toString(args)}");
+        LOGGER.info("Program arguments: {}", Arrays.toString(args));
         var year = getYear(args);
 
         titleService.init();
-        LOGGER.info(String.format("Datastore initialized after %ds", (System.currentTimeMillis() - startTime) / 1000));
+        LOGGER.info("Datastore initialized after {}s", (System.currentTimeMillis() - startTime) / 1000);
 
         var chartedSongs = titleService.getChartedSongsForYear(year);
         playlistService.fillPlaylistWithSongs(String.format(PLAYLIST_NAME_TEMPLATE, year), chartedSongs);
 
-        LOGGER.info(String.format("Finished: %ds", (System.currentTimeMillis() - startTime) / 1000));
+        LOGGER.info("Finished: {}s", (System.currentTimeMillis() - startTime) / 1000);
     }
 
     private short getYear(String[] args) {

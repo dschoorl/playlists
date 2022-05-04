@@ -23,32 +23,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class QueryStringComposerTest {
     @Test
     public void omit_The_ArticleFromArtistAndTitleKeywords() throws Exception {
-        var queryString = QueryStringComposer.makeQueryString(new Song("the band", "the song"));
-        assertEquals("band track:song", queryString);
+        var queryString = QueryStringComposer.getQueryWords(new Song("the band", "the song"));
+        assertEquals("band track:song", queryString.normalized());
     }
 
     @Test
     public void omit_A_ArticleFromTitleKeywords() throws Exception {
-        var queryString = QueryStringComposer.makeQueryString(new Song("a singer", "a song"));
-        assertEquals("a singer track:song", queryString);
+        var queryString = QueryStringComposer.getQueryWords(new Song("a singer", "a song"));
+        assertEquals("a singer track:song", queryString.normalized());
     }
 
     @Test
     public void stripPuctuationFromTitle() throws Exception {
-        var queryString = QueryStringComposer.makeQueryString(new Song("abt", "don't stop"));
-        assertEquals("abt track:dont stop", queryString);
+        var queryString = QueryStringComposer.getQueryWords(new Song("abt", "don't stop"));
+        assertEquals("abt track:dont stop", queryString.normalized());
     }
 
     @Test
     public void resolveArtistAliasses() throws Exception {
-        var queryString = QueryStringComposer.makeQueryString(new Song("ABBA*Teens", "Mamma Mia"));
-        assertEquals("a*teens track:mamma mia", queryString);
+        var queryString = QueryStringComposer.getQueryWords(new Song("ABBA*Teens", "Mamma Mia"));
+        assertEquals("a*teens track:mamma mia", queryString.normalized());
     }
 
     @Test
     public void orderKeyWordsArtistAndTitleAlphabetically() throws Exception {
         //this is done to make test asserts easier
-        var queryString = QueryStringComposer.makeQueryString(new Song("zero downtime", "three two one"));
-        assertEquals("downtime zero track:one three two", queryString);
+        var queryString = QueryStringComposer.getQueryWords(new Song("zero downtime", "three two one"));
+        assertEquals("downtime zero track:one three two", queryString.normalized());
     }
 }

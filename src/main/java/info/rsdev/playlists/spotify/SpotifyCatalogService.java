@@ -15,7 +15,7 @@
  */
 package info.rsdev.playlists.spotify;
 
-import static info.rsdev.playlists.spotify.QueryStringComposer.makeQueryString;
+import static info.rsdev.playlists.spotify.QueryStringComposer.getQueryWords;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -105,15 +105,22 @@ public class SpotifyCatalogService implements MusicCatalogService {
 	}
 
 	private Optional<SongFromCatalog> searchSpotifyForSong(Song song) throws IOException, SpotifyWebApiException {
-		// TODO: introduce a search strategy class which allows for more compex
-		// algorithms
-		var queryString = makeQueryString(song);
+		var queryWords = getQueryWords(song);
+		Optional<SongFromCatalog> result = executeTitleSearchQuery(song, queryWords.normalized())
+				.or(() -> executeTitleSearchQuery(song, queryWords.minimized()));
+		if (LOGGER.isDebugEnabled() && result.isEmpty()) {
+			LOGGER.debug("Tried normalized '{}' and minimized '{}' queries, without result.", queryWords.normalized(), queryWords.minimized());
+		}
+		return result;
+	}
+	
+	private Optional<SongFromCatalog> executeTitleSearchQuery(Song song, String queryString) {
 		var searchResult = executeSearchOnSpotify(queryString);
 		var hits = searchResult.getTotal();
 		return hits == 0 ? Optional.empty() : selectRightResult(song, searchResult);
 	}
 
-	private Paging<Track> executeSearchOnSpotify(String queryString) throws IOException, SpotifyWebApiException {
+	private Paging<Track> executeSearchOnSpotify(String queryString) {
 		var searchRequest = spotifyApi.searchTracks(queryString).build();
 		Paging<Track> searchResult = null;
 		while (searchResult == null) {
@@ -121,7 +128,7 @@ public class SpotifyCatalogService implements MusicCatalogService {
 				searchResult = searchRequest.execute();
 			} catch (TooManyRequestsException e) {
 				TooManyRequestsExceptionHandler.handle(LOGGER, searchRequest.getClass().getSimpleName(), e);
-			} catch (ParseException e) {
+			} catch (ParseException| IOException | SpotifyWebApiException e) {
 				throw new RuntimeException(e);
 			}
 		}
