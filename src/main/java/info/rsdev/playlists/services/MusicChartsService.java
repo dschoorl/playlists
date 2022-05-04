@@ -20,8 +20,6 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -88,7 +86,8 @@ public class MusicChartsService implements MusicTitleService {
     private byte firstWeek(MusicChart chart, short year) {
         var highestWeekStoredForYear = chartsItemDao.getHighestWeekStored(chart, year);
         if (highestWeekStoredForYear >= 0) {
-            return highestWeekStoredForYear;
+        	//We don't want to re-scrape and store the latest week already scraped
+            return highestWeekStoredForYear++;
         }
         return chart.yearStarted() == year? chart.weekStarted(): 1;
     }

@@ -1,15 +1,55 @@
 package info.rsdev.playlists.spotify;
 
-import info.rsdev.playlists.domain.Song;
-
-import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.rsdev.playlists.domain.Song;
+
 public class QueryStringComposer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueryStringComposer.class);
+    
+    static record QueryWords(SortedSet<String> artistWords, SortedSet<String> titleWords) {
+    	
+    	public String normalized() {
+    		return asQueryString(artistWords, titleWords);
+    	}
+    	
+    	public String minimized() {
+    		//TODO: sort by length of words, only the two longest words, min. 4 characters each.
+    		var artistLongerWords = filterAndSelectByWordsize(this.artistWords, 4);
+    		var titleLongerWords = filterAndSelectByWordsize(this.titleWords, 4);
+    		return asQueryString(artistLongerWords, titleLongerWords);
+    	}
+    	
+    	private Collection<String> filterAndSelectByWordsize(SortedSet<String> words, int maxWordSize) {
+    		if (!words.isEmpty()) {
+	    		Collection<String> result = words.size() > 1? words.stream().filter(item -> item.length() >= maxWordSize).sorted((a, b) -> Integer.compare(b.length(), a.length())).limit(2).toList(): Collections.singleton(words.first());
+	    		//when all words are shorter than the maxWordSize, just return the original collection
+	    		return result.isEmpty()? words: result;
+    		}
+    		return words;	//empty in, empty out
+    	}
+    	
+    	public String asQueryString(Collection<String> artist, Collection<String> title) {
+            var query = new StringBuilder();
+            appendSearchField(query, null, artist);
+            if (!artistWords.isEmpty()) {
+                query.append(" ");
+            }
+            appendSearchField(query, TRACK_TITLE_FIELD, title);
+            return query.toString();
+
+    	}
+    }
+	
     // all entries must be lower case
     private static final Set<String> CREDITS_NOISE_WORDS = Set.of("feat", "feat.", "featuring", "ft.", "ft", "mmv", "m.m.v.");
     private static final Set<String> ARTIST_NOISE_WORDS = Set.of("the", "with", "and", "x", "+", "vs", "vs.");
@@ -65,16 +105,16 @@ public class QueryStringComposer {
         return sb.toString();
     }
 
-    public static String makeQueryString(Song song) throws UnsupportedEncodingException {
+    public static QueryWords getQueryWords(Song song) {
         var titleWords = normalizeTitle(song);
         var artistWords = normalizeArtist(song);
-        var query = new StringBuilder();
-        appendSearchField(query, null, artistWords);
-        if (!artistWords.isEmpty()) {
-            query.append(" ");
-        }
-        appendSearchField(query, TRACK_TITLE_FIELD, titleWords);
-        return query.toString();
+        return new QueryWords(artistWords, titleWords);
+    }
+    
+    public static String minimizeQueryString(String queryString) {
+    	//assume longest words are the most important, so remove the shorter words from title
+    	LOGGER.info("No results with query: {}", queryString);
+    	return queryString;
     }
 
     private static String chooseOneWhenThereIsDoubleASide(String title) {
@@ -85,7 +125,7 @@ public class QueryStringComposer {
         return ARTIST_ALIASSES.getOrDefault(word, word);
     }
 
-    private static StringBuilder appendSearchField(StringBuilder query, String fieldName, SortedSet<String>words)  throws UnsupportedEncodingException {
+    private static StringBuilder appendSearchField(StringBuilder query, String fieldName, Collection<String> words) {
         if (!words.isEmpty()) {
             if (fieldName != null) {
                 query.append(fieldName).append(":");
