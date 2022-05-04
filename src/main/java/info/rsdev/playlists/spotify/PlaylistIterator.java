@@ -25,7 +25,9 @@ public class PlaylistIterator extends BasePagingIterator<PlaylistSimplified> {
 
     //Factory method
     public static PlaylistIterator create(SpotifyApi spotifyApi) throws IOException, SpotifyWebApiException {
-        return new PlaylistIterator(spotifyApi);
+    	PlaylistIterator iterator = new PlaylistIterator(spotifyApi);
+    	iterator.init();
+        return iterator;
     }
 
 }

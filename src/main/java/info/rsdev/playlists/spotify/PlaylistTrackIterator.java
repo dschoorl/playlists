@@ -12,14 +12,11 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 
 public class PlaylistTrackIterator extends BasePagingIterator<PlaylistTrack> {
 
-	private final String userId;
-
 	private final String playlistId;
 
-	private PlaylistTrackIterator(SpotifyApi spotifyApi, String userId, String playlistId)
+	private PlaylistTrackIterator(SpotifyApi spotifyApi, String playlistId)
 			throws IOException, SpotifyWebApiException {
 		super(spotifyApi);
-		this.userId = userId;
 		this.playlistId = Objects.requireNonNull(playlistId);
 	}
 
@@ -33,8 +30,10 @@ public class PlaylistTrackIterator extends BasePagingIterator<PlaylistTrack> {
 	}
 
 	// Factory method
-	public static PlaylistTrackIterator create(SpotifyApi spotifyApi, String userId, String playlistId)
+	public static PlaylistTrackIterator create(SpotifyApi spotifyApi, String playlistId)
 			throws IOException, SpotifyWebApiException {
-		return new PlaylistTrackIterator(spotifyApi, userId, playlistId);
+		PlaylistTrackIterator iterator = new PlaylistTrackIterator(spotifyApi, playlistId);
+		iterator.init();
+		return iterator;
 	}
 }

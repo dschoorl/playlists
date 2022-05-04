@@ -12,13 +12,24 @@ public abstract class BasePagingIterator<T> implements Iterator<T> {
 
 	private Paging<T> results;
 
-	private final int size;
+	private int size;
 
 	private int pageItemsIterated = 0;
 	private int totalItemsIterated = 0;
 
-	protected BasePagingIterator(SpotifyApi spotifyApi) throws IOException, SpotifyWebApiException {
+	protected BasePagingIterator(SpotifyApi spotifyApi) {
 		this.spotifyApi = spotifyApi;
+	}
+
+	/**
+	 * Initialize the iterator after it has been constructed, so that values needed
+	 * to execute the {@link #getResults(int)} method can be processed in the parent
+	 * constructor
+	 * 
+	 * @throws SpotifyWebApiException
+	 * @throws IOException
+	 */
+	protected void init() throws SpotifyWebApiException, IOException {
 		results = getResults();
 		size = results.getTotal();
 	}
