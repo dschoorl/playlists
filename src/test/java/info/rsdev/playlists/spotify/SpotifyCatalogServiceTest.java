@@ -15,8 +15,9 @@
  */
 package info.rsdev.playlists.spotify;
 
+import info.rsdev.playlists.config.SpringCommonConfig;
 import info.rsdev.playlists.domain.Song;
-import info.rsdev.playlists.ioc.SpringCommonConfig;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import java.util.HashSet;
 

@@ -18,7 +18,7 @@ package info.rsdev.playlists;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,9 @@ public class Playlists implements CommandLineRunner {
     public void run(String... args) throws Exception {
         var startTime = System.currentTimeMillis();
 
-        LOGGER.info("Program arguments: {}", Arrays.toString(args));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Program arguments: {}", Arrays.toString(args));
+        }
         var year = getYear(args);
 
         titleService.init();

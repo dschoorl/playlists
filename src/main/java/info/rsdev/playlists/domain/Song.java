@@ -18,10 +18,12 @@ package info.rsdev.playlists.domain;
 
 import java.io.Serializable;
 
+import info.rsdev.playlists.spotify.QueryCache;
+
 /**
- * This class represents a Song with a [title] that is performed by an [artist]. The natural order of Songs is alphabetical by
- * [artist] and then alphabetical by [title]. A song can be cached to file by [info.rsdev.playlists.spotify.QueryCache] and
- * therefore needs to implement [Serializable].
+ * This class represents a Song with a {@link #title()} that is performed by an {@link #artist()}. The natural order of Songs is alphabetical by
+ * {@link #artist} and then alphabetical by {@link #title}. A song can be cached to file by {@link QueryCache} and
+ * therefore needs to implement {@link Serializable}.
  */
 public record Song(String artist, String title) implements Serializable, Comparable<Song> {
 

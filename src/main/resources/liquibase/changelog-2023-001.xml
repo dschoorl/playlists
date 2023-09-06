@@ -1,0 +1,51 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd 
+       http://www.liquibase.org/xml/ns/dbchangelog 
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+	<!-- Start with non-normalized data structure -->
+    <changeSet author="dschoorl" id="1">
+        <createTable tableName="chart_items">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="chart_id" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="year" type="smallint">
+                <constraints nullable="false" />
+            </column>
+            <column name="week_number" type="tinyint">
+                <constraints nullable="false" />
+            </column>
+            <column name="position" type="smallint">
+                <constraints nullable="false" />
+            </column>
+            <column name="is_newcommer" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="artist" type="varchar(254)">
+                <constraints nullable="false" />
+            </column>
+            <column name="title" type="varchar(254)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="chart_items" indexName="ranking" unique="true">
+        	<column name="chart_id" />
+        	<column name="year" descending="true" />
+        	<column name="week_number" descending="true" />
+        	<column name="position" />
+        </createIndex>
+        <createIndex tableName="chart_items" indexName="song">
+        	<column name="artist" />
+        	<column name="title" />
+        </createIndex>
+        <modifySql dbms="mysql">
+            <append value="engine=innodb charset=utf8mb4 collate utf8mb4_unicode_ci" />
+        </modifySql>
+    </changeSet>
+
+</databaseChangeLog>

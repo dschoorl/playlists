@@ -25,7 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import info.rsdev.playlists.dao.ChartsItemDao;
+import info.rsdev.playlists.dao.Initializable;
 import info.rsdev.playlists.domain.Song;
+import info.rsdev.playlists.exception.FailedHostException;
 
 /**
  * This is the default implementation of a {@link MusicTitleService}
@@ -46,14 +48,15 @@ public class MusicChartsService implements MusicTitleService {
 
     @Override
     public void init() {
-        if (chartsItemDao.setupStoreWhenNeeded()) {
+        if (chartsItemDao instanceof Initializable init && init.setupStoreWhenNeeded()) {
             LOGGER.info("New datastore created succesfully");
         }
-        for (MusicChart chart: MusicChart.values()) {
+
+        for (MusicChart chart : MusicChart.values()) {
             var maxYear = chartsItemDao.getHighestYearStored(chart);
             if (maxYear >= 0) {
                 var maxWeek = chartsItemDao.getHighestWeekStored(chart, maxYear);
-                LOGGER.warn(String.format("Datastore contains data for %s from %d, week %d", chart, maxYear, maxWeek));
+                LOGGER.warn("Datastore contains data for {} from {}, week {}", chart, maxYear, maxWeek);
             }
         }
         loadData();
@@ -64,36 +67,51 @@ public class MusicChartsService implements MusicTitleService {
         return new ArrayList<>(chartsItemDao.getReleases(year));
     }
 
+    /**
+     * Complete the database with data from the missing editions of the wanted
+     * charts by retrieving them from the Internet via the {@link ScrapeService}
+     */
     private void loadData() {
-        short currentYear = (short)LocalDate.now().getYear();
-        for (MusicChart chart: scrapeService.getSupportedCharts()) {
-            for (short year = getFirstYearToScrape(chart); year <=currentYear; year++) {
-                for (byte weekNumber = firstWeek(chart, year); weekNumber<=lastWeek(currentYear, year); weekNumber++) {
-                    var chartsItems = scrapeService.scrape(newInternetDocumentFetcher(chart, year, weekNumber));
-                    chartsItems.forEach(it -> chartsItemDao.saveOrUpdate(it));
-                    LOGGER.info("writing week {} of {} {} to persistence layer ({} songs)",
-                            weekNumber, chart, year, chartsItems.size());
+        short currentYear = (short) LocalDate.now().getYear();
+        for (MusicChart chart : scrapeService.getSupportedCharts()) {
+            try {
+                for (short year = getFirstYearToScrape(chart); year <= currentYear; year++) {
+                    for (byte weekNumber = firstWeek(chart, year); weekNumber <= lastWeek(currentYear, year); weekNumber++) {
+                        long start = System.currentTimeMillis();
+                        var chartsItems = scrapeService.scrape(newInternetDocumentFetcher(chart, year, weekNumber));
+                        if (!chartsItems.isEmpty()) {
+                            long scrapeMillies = System.currentTimeMillis() - start;
+                            chartsItemDao.insert(chartsItems);
+                            long dbMillies = System.currentTimeMillis() - start - scrapeMillies;
+                            LOGGER.info("persisted week {} of {} {} ({} songs [ scrape={}ms., db={}ms.])", weekNumber, chart, year,
+                                    chartsItems.size(), scrapeMillies, dbMillies);
+                        }
+                    }
                 }
+            } catch (FailedHostException e) {
+                LOGGER.error("Exception during scraping", e);
+                // We do not want holes in our charts, because at present we have no means to
+                // detect and fix them, therefore move on with next chart.
             }
         }
     }
 
     private short getFirstYearToScrape(MusicChart chart) {
         var highestYearStoredCharts = chartsItemDao.getHighestYearStored(chart);
-        return highestYearStoredCharts >= 0? highestYearStoredCharts: chart.yearStarted();
+        return highestYearStoredCharts >= 0 ? highestYearStoredCharts : chart.yearStarted();
     }
 
     private byte firstWeek(MusicChart chart, short year) {
         var highestWeekStoredForYear = chartsItemDao.getHighestWeekStored(chart, year);
         if (highestWeekStoredForYear >= 0) {
-        	//We don't want to re-scrape and store the latest week already scraped
-            return highestWeekStoredForYear++;
+            // We don't want to re-scrape and store the latest week already scraped
+            return (byte) (highestWeekStoredForYear + 1);
         }
-        return chart.yearStarted() == year? chart.weekStarted(): 1;
+        return chart.yearStarted() == year ? chart.weekStarted() : 1;
     }
 
     private byte lastWeek(short currentYear, short yearProcessing) {
-        return currentYear == yearProcessing? (byte)LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR): 53;
+        return currentYear == yearProcessing ? (byte) LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR) : 53;
     }
 
     private DocumentFetcher newInternetDocumentFetcher(MusicChart chart, short year, byte weekNumber) {

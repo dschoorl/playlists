@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
+public class ElasticBulkWritingChartsItemDao implements ChartsItemDao, Initializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticBulkWritingChartsItemDao.class);
 
@@ -144,13 +144,20 @@ public class ElasticBulkWritingChartsItemDao implements ChartsItemDao {
     }
 
     @Override
-    public void saveOrUpdate(ChartsItem chartsItem) {
+    public void insert(ChartsItem chartsItem) {
         var request = new UpdateRequest(CHARTSITEM_INDEX_NAME, UUID.randomUUID().toString());
         request.docAsUpsert(true);
         request.doc(toContentBuilder(chartsItem));
         this.bulkProcessor.add(request);
     }
 
+    @Override
+    public void insert(List<ChartsItem> chartsItems) {
+        if (chartsItems != null) {
+            chartsItems.forEach(this::insert);
+        }
+    }
+    
     private XContentBuilder toContentBuilder(ChartsItem chartsItem) {
         try {
             return XContentFactory.jsonBuilder()

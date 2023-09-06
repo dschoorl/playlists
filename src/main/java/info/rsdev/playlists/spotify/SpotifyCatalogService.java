@@ -62,11 +62,13 @@ public class SpotifyCatalogService implements MusicCatalogService {
 		try {
 			authorizor.authorize(spotifyApi);
 			this.currentUser = getCurrentUser().orElseThrow(UnauthorizedException::new);
+			LOGGER.info("Logged in user: {}", this.currentUser.getDisplayName());
 		} catch (UnauthorizedException e) {
-			throw new IllegalStateException(authorizor.getAuthorizationCodeUrlMessage(spotifyApi), e);
+		    LOGGER.error(e.getMessage());
+		    LOGGER.error(authorizor.getAuthorizationCodeUrlMessage(spotifyApi));
+//			throw new IllegalStateException(authorizor.getAuthorizationCodeUrlMessage(spotifyApi), e);
 		}
 		
-		LOGGER.info("Logged in user: {}", this.currentUser.getDisplayName());
 
 		this.queryCache = new QueryCache();
 		LOGGER.info("Read {} cache entries from file", queryCache.size());

@@ -15,28 +15,23 @@
  */
 package info.rsdev.playlists.dao;
 
+import java.util.Collection;
+import java.util.List;
+
 import info.rsdev.playlists.domain.ChartsItem;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.services.MusicChart;
 
-import java.util.Collection;
-
 public interface ChartsItemDao {
 
-    /**
-     * prepare an existing datastore to persist [ChartsItem] instances. If the data store is already setup, this
-     * method will do nothing
-     *
-     * @return true if the persistence store was newly created, false otherwise
-     */
-    boolean setupStoreWhenNeeded();
+    void insert(ChartsItem chartsItem);
 
-    void saveOrUpdate(ChartsItem chartsItem);
+    void insert(List<ChartsItem> chartsItems);
 
     Collection<Song> getReleases(short year);
 
     /**
-     * Get the latest year for which the datastore has stored [ChartsItem]s for the given [chart][MusicChart]
+     * Get the latest year for which the data store has stored {@link ChartsItem}s for the given {@link MusicChart chart}
      *
      * @param chart the chart for which we want to get the info
      * @return the most recent year from which the persistence store contains [ChartsItem]s, or a negative number

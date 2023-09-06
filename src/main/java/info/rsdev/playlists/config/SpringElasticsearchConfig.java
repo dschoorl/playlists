@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.rsdev.playlists.ioc;
+package info.rsdev.playlists.config;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
@@ -33,6 +34,7 @@ import info.rsdev.playlists.dao.ElasticBulkWritingChartsItemDao;
  * @author Dave Schoorl
  */
 @Configuration
+@Profile("ElasticSearch")
 @PropertySource(value = "file:${user.home}/.playlists/elasticsearch.properties")
 public class SpringElasticsearchConfig {
 

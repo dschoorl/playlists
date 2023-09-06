@@ -15,12 +15,12 @@
  */
 package info.rsdev.playlists.services;
 
-import info.rsdev.playlists.domain.ChartsItem;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import info.rsdev.playlists.domain.ChartsItem;
+import info.rsdev.playlists.exception.FailedHostException;
 
 public interface ScrapeService {
 
@@ -29,11 +29,15 @@ public interface ScrapeService {
     }
 
     /**
-     * Transform the html that is retrieved via the [DocumentFetcher] into a list of [ChartsItem]s
+     * Transform the html that is retrieved via the [DocumentFetcher] into a list of
+     * [ChartsItem]s
+     * 
      * @param fetcher the [DocumentFetcher] pointing at a html source
      * @return the [ChartsItem]s that are listed in the html
+     * @throws FailedHostException When host to scrape is not operating correctly or
+     *                             is unreachable
      */
-    List<ChartsItem> scrape(DocumentFetcher fetcher);
+    List<ChartsItem> scrape(DocumentFetcher fetcher) throws FailedHostException;
 
     Optional<String> getUrlTemplate(MusicChart chart);
 }

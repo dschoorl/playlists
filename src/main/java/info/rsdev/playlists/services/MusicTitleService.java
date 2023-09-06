@@ -20,7 +20,7 @@ import info.rsdev.playlists.domain.Song;
 import java.util.List;
 
 /**
- * This interface defines the methods to initialize and interact with a persistence store containing [Song]s
+ * This interface defines the methods to initialize and interact with a persistence store containing {@link Song songs}
  */
 public interface MusicTitleService {
 
