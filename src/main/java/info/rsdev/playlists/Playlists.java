@@ -67,7 +67,8 @@ public class Playlists implements CommandLineRunner {
     }
 
     private short getYear(String[] args) {
-        //too little time, implemented quick and dirty -- no validation or error checking
-        return args.length == 1 ? Short.parseShort(args[0]) : (short)LocalDate.now().getYear();
+        // too little time, implemented quick and dirty -- no validation or error
+        // checking, expect the last program argument to be the year
+        return args.length > 0 ? Short.parseShort(args[args.length - 1]) : (short) LocalDate.now().getYear();
     }
 }
