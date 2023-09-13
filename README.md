@@ -30,30 +30,45 @@ the existing playlist, it will only add new songs when they are not already pres
 
 ## Setup
 What you need to get this program running, is the following:
-1. A running ElasticSearch database
+1. A running MariaDb database
 1. A clientId that you receive when you register this application with Spotify
 1. A Java 17 SDK (or newer)
 
 Below each requirement is discussed in more detail.
 
-### A running ElasticSearch database
-The application persists a collection of songs in an ElasticSearch database. I chose a NoSQL database over a relational
-one, only to gain some experience with this type of database. Installing ElasticSearch is easy; you can find instructions
-here: https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html
+### A running MariaDb database
+When I started the project, I choose a NoSQL database over a relational one, only for me to gain some experience with this type 
+of database. However, it is not a good fit for this application, so I decided to change it back to a relational one. Since September 2023 
+it will use a MariaDb relational database.
 
-Next you need to provide connection details to the playlists application via a property file called
-`elasticsearch.properties`, which must be located in your home folder, in the subdirectory called `.playlists`. You 
-need to create these mannually as part of the setup process. The property file must contain two key-value pairs, for the 
-properties `es.hostname` and `es.portnumber`.
+If you not already have a MariaDb server running (MySql should work as well), please install one. You can find installation instructions 
+for windows [here](https://www.mariadbtutorial.com/getting-started/install-mariadb/) or for Linux 
+[here](https://www.digitalocean.com/community/tutorial-collections/how-to-install-mariadb). I have tested the application against MariaDb 
+10.11. The application uses Liquibase to update the table structure over time. You must only create the database yourself plus create two 
+accounts, one with rights to maintain the data and one with the rights to maintain the datbase structure. You could use the sql below for 
+inspiration:
 
-If you run elasticsearch on your localhost on port 9200 (the default), then the contents of elasticsearch.properties would look like this:
+```sql
+create database if not exists playlists;
 
+create user if not exists 'liquibase'@'%' identified by 'liquibase';
+grant all privileges on playlists.* to 'liquibase'@'%';
+
+create user if not exists 'pl_user'@'%' identified by 'pl_user';
+grant delete, execute, insert, select, update on playlists.* to 'pl_user'@'%';
+
+flush privileges;
 ```
-es.hostname=localhost
-es.portnumber=9200
+
+Next you need to provide the database credentials to the playlists application via a properties file that lives next to the executable jar file. We call it `application-local.properties` and it should contain the following properties:
+
+```properties
+spring.liquibase.password=<password_of_liquibase>
+spring.datasource.password=<password_of_pl_user>
 ```
 
-If your installation requires more complex connection details, you need to change the sourcecode at `info.rsdev.playlists.ioc.SpringElasticsearchConfig`. Check the elasticsearch documentation for details.
+You must substitute these dummy passwords with the values you have used when you created the accounts.
+
 
 ### A Spotify clientId
 Before the playlists application can access Spotify, you must register it with Spotify and receive a clientId. A 
@@ -114,10 +129,10 @@ On Windows: ```gradelw.bat build ```
 On Mac/Linux: ```./gradlew build```
 
 This will create a fat jar in the sub directory called `build/libs` that can be executed with the `java -jar` 
-command. When you execute it, you must pass the year on for which you want to compile a spotify playlist. E.g. to 
-run the application for the year 1999, you would enter from the project directory:   
-On Windows: `java -jar build\libs\playlists.jar 1999`   
-On Mac/Linux: `java -jar build/libs/playlists.jar 1999`   
+command. When you execute it, you must supply the year for which you want to compile a spotify playlist as the last program argument. E.g. to activate the `local` application profile (which causes the application-local.properties file to be applied) and make it compile a playlist for the year 1999, you would enter from the project directory:  
+
+On Windows: `java -jar build\libs\playlists.jar --spring.profiles.active=local 1999`   
+On Mac/Linux: `java -jar build/libs/playlists.jar --spring.profiles.active=local 1999`   
 
 Please continue reading the next section where it is explained what the application is doing or trying to do.
 
@@ -216,12 +231,12 @@ You need to follow this procedure again for each year you want to create a playl
 The program works for me, because I know how to handle and run it. I tried to explain setup and running as good as 
 possible, so that it can work for you too. It took me 65 hours to write the first version that was feature complete for my 
 purposes, which gives me a return on investment of 4 years. I consider that to be pretty good. Meanwhile, I learned a few 
-new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-database, but also JSoup and 
+new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-database and Kotlin, but also JSoup and 
 Spotify-web-api to name a few smaller frameworks that were new to me.
 
-I will continue to support this project. My original goal was to use this project as a playground for new technologies, but recently I am trying to find a balance between productivity and experimenting with new technologies. As a result I switched back from Kotlin to Java 17. 
+I will continue to support this project. My original goal was to use this project as a playground for new technologies, but recently I am trying to find a balance between productivity and experimenting with new technologies. As a result I switched back from Kotlin to Java 17 and from ElasticSearch to MariaDb. 
 
-I would like to add a Web GUI to improve the user experience. This will probably be a Javascript framework like Angular or React.
+I would like to add a Web GUI to improve the user experience. This will probably use a Javascript framework like Angular or React.
 
 I have some additional ideas to add to the program, more in the area of functional requirements, like
 1. Improve the algorithm that detects if a song is already in a playlist or not
