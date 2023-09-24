@@ -20,6 +20,11 @@ target
 build/
 out/
 .gradle
+.frontend-gradle-plugin
+node
+node_modules
+.yarn
+
 
 # ignore Mac OSX related files and directories
 .DS_Store
