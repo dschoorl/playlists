@@ -22,14 +22,14 @@ public record ChartsItem(String chartName,
 
         @Override
         public String toString() {
-        return "ChartsItem{" +
-        "chartName='" + chartName + "'" +
-        ", year=" + year +
-        ", weekNumber=" + weekNumber +
-        ", position=" + position +
-        ", new=" + isNewRelease +
-        ", artist='" + song.artist() + "'" +
-        ", title='" + song.title() + "'" +
-        "}";
-        }
+            return "ChartsItem{" +
+            "chartName='" + chartName + "'" +
+            ", year=" + year +
+            ", weekNumber=" + weekNumber +
+            ", position=" + position +
+            ", new=" + isNewRelease +
+            ", artist='" + song.artist() + "'" +
+            ", title='" + song.title() + "'" +
+            "}";
+            }
         }

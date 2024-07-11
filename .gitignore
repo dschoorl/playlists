@@ -1,25 +1,49 @@
-# ignore eclipse related files and directories
-.classpath
-.project
-.factorypath
-.settings
+# Compiled output
+dist
+tmp
+out-tsc
+bazel-out
 bin
+target
+build
+out
 
-# ignore intellij related files and directories
-.idea
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
 *.iml
-
-# ignore netbeans related files and directories
-/nbproject/
+.project
+.classpath
+.factorypath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+nbproject/
 nb-*
 
-# ignore maven related files and directories
-target
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
 
-# ignore gradle related files and directories
-build/
-out/
+# Miscellaneous
+.angular
+.sass-cache/
+connect.lock
+coverage
+libpeerconnection.log
+testem.log
+typings
 .gradle
 
-# ignore Mac OSX related files and directories
+# System files
 .DS_Store
+Thumbs.db

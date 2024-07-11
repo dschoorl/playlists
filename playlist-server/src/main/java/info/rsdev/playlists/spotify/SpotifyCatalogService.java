@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import info.rsdev.playlists.domain.CatalogPlaylist;
@@ -45,6 +46,7 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.User;
 
+@Lazy
 @Service
 public class SpotifyCatalogService implements MusicCatalogService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyCatalogService.class);

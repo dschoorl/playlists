@@ -1,1 +1,3 @@
 rootProject.name = 'playlists'
+
+include 'playlist-server', 'angular-client'

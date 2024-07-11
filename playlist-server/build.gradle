@@ -1,6 +1,6 @@
 plugins {
-    id 'org.springframework.boot' version '3.1.3'
-    id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.springframework.boot' version '3.3.1'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
 }
 
@@ -12,16 +12,33 @@ group = 'info.rsdev'
 version = '0.1.0-SNAPSHOT'
 bootJar.archiveFileName="playlists.jar"
 
-sourceCompatibility = '17'
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile) {
+    options.release = 21
+    options.encoding = "UTF-8"
+}
+
+task copyGUI(type: Copy) {
+    from '../angular-client/dist/browser'
+    into 'build/resources/main/static'
+}
+
+copyGUI.dependsOn(':angular-client:build')
+processResources.dependsOn(copyGUI)
 
 dependencies {
     implementation('org.springframework.boot:spring-boot-starter')
     implementation('org.springframework.boot:spring-boot-starter-logging')
     implementation('org.springframework.boot:spring-boot-starter-jdbc')
+    implementation('org.springframework.boot:spring-boot-starter-web')
     implementation('org.liquibase:liquibase-core')
 	implementation('org.mariadb.jdbc:mariadb-java-client')
     implementation("org.jsoup:jsoup:1.16.1")
-	implementation("se.michaelthelin.spotify:spotify-web-api-java:7.1.0")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:7.1.0")
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.elasticsearch.client:elasticsearch-rest-high-level-client:7.3.0")
     testImplementation('org.springframework.boot:spring-boot-starter-test') {

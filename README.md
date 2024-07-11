@@ -1,4 +1,8 @@
 # playlists
+
+> [!IMPORTANT]  
+> I started development of a Web GUI with the Angular framework to improve the user experience. This change makes part of the documentation below outdated. This will be fixed when a first version of the Web GUI is finalized.
+
 ## Purpose
 Compile Spotify playlists from music charts published on the internet.
 
@@ -32,7 +36,7 @@ the existing playlist, it will only add new songs when they are not already pres
 What you need to get this program running, is the following:
 1. A running MariaDb database
 1. A clientId that you receive when you register this application with Spotify
-1. A Java 17 SDK (or newer)
+1. A Java 21 SDK (or newer)
 
 Below each requirement is discussed in more detail.
 
@@ -113,8 +117,8 @@ spotify.redirectUrl=https://playlists.for.me
 spotify.authCode=
 ```
 
-### A Java 17 SDK (or newer)
-The application runs on a Java 17 Virtual Machine, so you must have a working installation on your computer. The project 
+### A Java 21 SDK (or newer)
+The application runs on a Java 21 Virtual Machine, so you must have a working installation on your computer. The project 
 uses Gradle as build tool. You do not need to have Gradle installed prior to building the project, because it will download
 itself automatically. However, you do need git installed on your machine.
 
@@ -128,15 +132,15 @@ Execute the following command to build the project:
 On Windows: ```gradelw.bat build ```   
 On Mac/Linux: ```./gradlew build```
 
-This will create a fat jar in the sub directory called `build/libs` that can be executed with the `java -jar` 
-command. When you execute it, you must supply the year for which you want to compile a spotify playlist as the last program argument. E.g. to activate the `local` application profile (which causes the application-local.properties file to be applied) and make it compile a playlist for the year 1999, you would enter from the project directory:  
+This will create a fat jar in the sub directory called `playlist-server/build/libs` that can be executed with the `java -jar` command:  
 
-On Windows: `java -jar build\libs\playlists.jar --spring.profiles.active=local 1999`   
-On Mac/Linux: `java -jar build/libs/playlists.jar --spring.profiles.active=local 1999`   
+On Windows: `java -jar playlist-server\build\libs\playlists.jar --spring.profiles.active=local`   
+On Mac/Linux: `java -jar playlist-verver/build/libs/playlists.jar --spring.profiles.active=local`   
 
 Please continue reading the next section where it is explained what the application is doing or trying to do.
 
 #### Running - obtain a (temporary) Spotify authorization code
+
 When you run the application, it needs a valid authorization code to access Spotify. Unfortunately, this process can not be done 
 automatically, since playlists is a command line application. The token is obtained by the user manually. A code is 
 usually valid for one run. After that, you must repeat the authorization proces.
@@ -235,8 +239,6 @@ new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-data
 Spotify-web-api to name a few smaller frameworks that were new to me.
 
 I will continue to support this project. My original goal was to use this project as a playground for new technologies, but recently I am trying to find a balance between productivity and experimenting with new technologies. As a result I switched back from Kotlin to Java 17 and from ElasticSearch to MariaDb. 
-
-I would like to add a Web GUI to improve the user experience. This will probably use a Javascript framework like Angular or React.
 
 I have some additional ideas to add to the program, more in the area of functional requirements, like
 1. Improve the algorithm that detects if a song is already in a playlist or not

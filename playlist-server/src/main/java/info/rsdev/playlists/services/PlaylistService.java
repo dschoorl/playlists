@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import info.rsdev.playlists.domain.Song;
@@ -33,6 +34,7 @@ import info.rsdev.playlists.domain.SongFromCatalog;
  *
  * @author Dave Schoorl
  */
+@Lazy
 @Service
 public class PlaylistService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlaylistService.class);
