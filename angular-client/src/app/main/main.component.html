@@ -1,0 +1,86 @@
+<app-profile />
+
+<div class="actions">
+  @if(!isPlaylistMatched() && !isLoadingCharts()) {
+  <button (click)="onMatchCurrentPlaylist()">Get playlist tracks</button>
+  } @if(isPlaylistMatched()) {
+  <button (click)="resolveAll()">Resolve All</button>
+  }
+</div>
+@if (isLoadingCharts()) {
+<p>Loading releases for {{ releaseYear() }} from server...</p>
+} @else { @if (charts().length > 0) {
+<table>
+  <thead>
+    <th>line</th>
+    <th>Artist (Charts)</th>
+    <th>Title (Charts)</th>
+    <th>Artist (Spotify)</th>
+    <th>Title (Spotify)</th>
+    <th>Actions</th>
+  </thead>
+  @for (item of charts(); track $index) {
+  <tr class="listing">
+    <td>{{ $index + 1 }}</td>
+    <td>{{ item.artist }}</td>
+    <td>
+      <em>{{ item.title }}</em>
+    </td>
+    @if (item.match) {
+    <td>
+      @for(artist of item.match.artists; track $index) {
+      <p>{{ artist.name }}</p>
+      }
+    </td>
+    <td>
+      <em>{{ item.match.name }}</em>
+    </td>
+    <td></td>
+    } @else {
+    <td></td>
+    <td></td>
+    <td>
+      @if (isPlaylistMatched()) {
+      <button (click)="addToPlaylist(item)">Resolve</button>
+      }
+    </td>
+    }
+  </tr>
+  }
+</table>
+} @else {
+<p>No releases could be loaded for {{ releaseYear() }}</p>
+} } @if(isLoadingPlaylist()) {
+<p>
+  Loading playlist tracks for '{{ releaseYear() }} charted songs' from
+  Spotify...
+</p>
+} @else { @if (unmatchedFromPlaylist().length > 0) {
+<h1>Tracks in playlist, but not matched with released songs</h1>
+<table>
+  <thead>
+    <th>line</th>
+    <th>Artist (Spotify)</th>
+    <th>Title (Spotify)</th>
+    <th>Actions</th>
+  </thead>
+  @for (item of unmatchedFromPlaylist(); track item.id) {
+  <tr class="listing">
+    <td>{{ $index + 1 }}</td>
+    <td>
+      @for(artist of item.artists; track $index) {
+      <p>{{ artist.name }}</p>
+      }
+    </td>
+    <td>
+      <em>{{ item.name }}</em>
+    </td>
+    <td><button (click)="deleteFromPlaylist(item)">Delete</button></td>
+  </tr>
+  }
+</table>
+} @else {
+<p>
+  No playlist or empty playlist with name '{{ releaseYear() }} charted songs'
+</p>
+} }

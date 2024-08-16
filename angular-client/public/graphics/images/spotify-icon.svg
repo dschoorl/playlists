@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="132"
+   height="132"
+   viewBox="0 0 132 132"
+   fill="none"
+   version="1.1"
+   id="svg129"
+   sodipodi:docname="spotify-icon2.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs133" />
+  <sodipodi:namedview
+     id="namedview131"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.0626866"
+     inkscape:cx="-204.19944"
+     inkscape:cy="-58.342697"
+     inkscape:window-width="1920"
+     inkscape:window-height="1031"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg129" />
+  <path
+     d="M 66,0 C 29.55,0 0,29.547 0,66 c 0,36.453 29.55,66 66,66 36.45,0 66,-29.547 66,-66 C 132,29.547 102.45,0 66,0 Z m 32.200002,95.143004 c -1.06,1.877 -3.01,2.933 -5.02,2.933 -0.94,0 -1.91,-0.235 -2.8,-0.73 -8.240002,-4.62 -17.220002,-7.45 -26.710002,-8.411 -9.51,-0.953 -18.9,0.012 -27.92,2.892 -3.01,0.961 -6.25,-0.702 -7.21,-3.717 -0.97,-3.02 0.7,-6.249004 3.72,-7.215004 10.52,-3.361 21.49,-4.504 32.57,-3.378 11.06,1.126 21.540002,4.426 31.160002,9.818004 2.77,1.542 3.76,5.04 2.21,7.808 z M 106.1,75.096 c -1.02,1.963 -3.02,3.089 -5.09,3.089 -0.9,0 -1.799998,-0.206 -2.649998,-0.651 C 88.230002,72.258 77.29,68.991 65.82,67.827 54.26,66.644 42.81,67.675 31.77,70.859 c -3.05,0.866 -6.23,-0.878 -7.1,-3.927 -0.88,-3.044 0.88,-6.224 3.92,-7.103 12.46,-3.593 25.38,-4.744 38.39,-3.424 12.92,1.316 25.260002,4.996 36.69,10.952 2.8,1.465 3.9,4.929 2.43,7.739 z m 2.86,-16.678 c -0.86,0 -1.73,-0.194 -2.56,-0.602 C 94.380002,51.822 81.45,48.089 67.96,46.72 54.45,45.338 41.01,46.406 28,49.88 c -3.06,0.812 -6.2,-1.003 -7.02,-4.068 -0.82,-3.061 1,-6.208 4.07,-7.025 14.35,-3.832 29.19,-4.999 44.08,-3.485 14.870002,1.505 29.130002,5.626 42.39,12.239 2.84,1.414 3.99,4.863 2.58,7.697 -1,2.017 -3.03,3.18 -5.14,3.18 z"
+     fill="#1ed760"
+     id="path127-3"
+     style="display:inline"
+     sodipodi:insensitive="true" />
+</svg>

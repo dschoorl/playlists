@@ -1,0 +1,13 @@
+<div>
+  @if(isSpotifyConnected()) {
+  <button class="connect-button" (click)="onDisconnectSpotify()">
+    <img src="/graphics/images/spotify-icon.svg" />
+    Disconnect from spotify
+  </button>
+  } @else {
+  <button class="connect-button" (click)="onConnectSpotify()">
+    <img src="/graphics/images/spotify-icon.svg" />
+    Connect to spotify
+  </button>
+  }
+</div>

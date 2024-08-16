@@ -1,0 +1,19 @@
+@import "../../global-styles/abstracts/variables";
+
+table {
+  border-collapse: collapse;
+}
+td {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  &:first-child {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+tr {
+  border-bottom: 0.1rem solid whitesmoke;
+  &:nth-child(even) {
+    background-color: rgb(58, 52, 52);
+  }
+}

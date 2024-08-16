@@ -1,0 +1,7 @@
+@if (userProfile()) {
+<h1>
+  Hello {{ userProfile()?.display_name }} from {{ userProfile()?.country }}
+</h1>
+} @else {
+<h1>No profile information available</h1>
+}

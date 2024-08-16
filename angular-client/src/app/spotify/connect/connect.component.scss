@@ -1,0 +1,12 @@
+@import "../../../global-styles/abstracts/variables";
+
+.connect-button {
+  padding: 1rem;
+  height: 10rem;
+  background-color: $background-color;
+  color: $text-color;
+
+  & img {
+    height: 100%;
+  }
+}

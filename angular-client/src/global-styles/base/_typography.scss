@@ -1,0 +1,24 @@
+@font-face {
+  font-family: $text-font-family;
+  src: url("/graphics/fonts/SpecialElite.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+button {
+  font-family: $text-font-family;
+}
+
+p,
+td,
+span,
+div {
+  font-size: 1.4rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
