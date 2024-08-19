@@ -1,13 +1,50 @@
+<div class="intro">
+  <h1>Introduction</h1>
+  <p>
+    On this page you can retrieve the list of single releases from the bakend
+    server that made the Dutch tipparade / top-40 of a certain year and compile
+    a private playlist on Spotify.
+  </p>
+  <ol>
+    <li>
+      First choose a year and a list of singles will be displayed that charted
+      that year.
+    </li>
+    <li>
+      Then click the 'Get playlist tracks' button to retrieve existing playlist
+      (or create a new one) with the name '&lt;year> charted songs', e.g. '2023
+      charted songs'.
+    </li>
+  </ol>
+  <p>
+    If the playlist exists, any existing songs are matched against the charted
+    items. You can now synchronize your playlist song by song or resolve all
+    unmatched items in one sweep.
+  </p>
+</div>
+
 <app-profile />
 
 <div class="actions">
-  @if(!isPlaylistMatched() && !isLoadingCharts()) {
+  <span>
+    <select
+      #selectedYear
+      id="year-select"
+      (change)="getReleases(selectedYear.value)"
+    >
+      <option value="">--Please choose an annum--</option>
+      @for (annum of years; track $index) {
+      <option [value]="annum">{{ annum }}</option>
+      }
+    </select>
+  </span>
+  @if(releaseYear() && !isPlaylistMatched() && !isLoadingCharts()) {
   <button (click)="onMatchCurrentPlaylist()">Get playlist tracks</button>
   } @if(isPlaylistMatched()) {
   <button (click)="resolveAll()">Resolve All</button>
   }
 </div>
-@if (isLoadingCharts()) {
+@if (releaseYear()) { @if (isLoadingCharts()) {
 <p>Loading releases for {{ releaseYear() }} from server...</p>
 } @else { @if (charts().length > 0) {
 <table>
@@ -79,8 +116,8 @@
   </tr>
   }
 </table>
-} @else {
+} @else if (isPlaylistMatched()) {
 <p>
   No playlist or empty playlist with name '{{ releaseYear() }} charted songs'
 </p>
-} }
+} } }

@@ -19,45 +19,55 @@ import { matchesTrack } from '../../util/SongMatcher';
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
 })
-export class MainComponent implements OnInit {
+export class MainComponent {
   isLoadingCharts = signal(false);
   isLoadingPlaylist = signal(false);
   isPlaylistMatched = signal(false);
-  releaseYear = signal(1975);
+  releaseYear = signal<number | undefined>(undefined);
   charts = signal<Song[]>([]);
   playlist = signal<SimplifiedPlaylist | undefined>(undefined);
   unmatchedFromPlaylist = signal<Track[]>([]);
   destroyRef = inject(DestroyRef);
 
+  get years(): number[] {
+    const currentYear = new Date().getFullYear();
+    return [...Array(currentYear - 1965 + 1).keys()].map((i) => i + 1965);
+  }
   constructor(
     private httpClient: HttpClient,
     private spotifyService: SpotifyService
   ) {}
 
-  ngOnInit(): void {
-    this.getReleases(this.releaseYear());
-  }
-
-  getReleases(year: number) {
+  getReleases(year: string) {
+    this.releaseYear.set(Number.parseInt(year));
     this.isLoadingCharts.set(true);
     const subscription = this.httpClient
       .get<Song[]>('/api/public/releases/' + year)
       .subscribe({
         next: (response) => this.charts.set(response),
-        complete: () => this.isLoadingCharts.set(false),
+        complete: () => {
+          this.isLoadingCharts.set(false);
+          this.unmatchedFromPlaylist.set([]);
+          this.isPlaylistMatched.set(false);
+        },
       });
     this.destroyRef.onDestroy(() => subscription.unsubscribe());
   }
 
   async onMatchCurrentPlaylist() {
+    if (!this.releaseYear()) {
+      console.log('No release year selected...');
+      return;
+    }
+
     this.isLoadingPlaylist.set(true);
     let playlist = await this.spotifyService.findPlaylist(
-      this.spotifyService.getPlaylistName(this.releaseYear())
+      this.spotifyService.getPlaylistName(this.releaseYear()!)
     );
 
     if (!playlist) {
       playlist = await this.spotifyService.createPlaylist(
-        this.spotifyService.getPlaylistName(this.releaseYear())
+        this.spotifyService.getPlaylistName(this.releaseYear()!)
       );
     }
 
@@ -105,10 +115,14 @@ export class MainComponent implements OnInit {
   }
 
   async addToPlaylist(song: Song) {
+    if (!this.releaseYear()) {
+      console.log('No release year selected...');
+      return;
+    }
     const match = await this.spotifyService.addToPlaylist(
       this.playlist(),
       song,
-      this.releaseYear()
+      this.releaseYear()!
     );
     if (match) {
       console.log('Found match: ', match);
