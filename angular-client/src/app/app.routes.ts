@@ -13,6 +13,13 @@ export const routes: Routes = [
   {
     path: 'start',
     component: ConnectComponent,
+    title: 'Playlist: Connect',
   },
-  { path: 'main', component: MainComponent, canMatch: [connectedGuard] },
+  {
+    path: 'main',
+    component: MainComponent,
+    canMatch: [connectedGuard],
+    title: 'Playlist: Release year',
+    runGuardsAndResolvers: 'always',
+  },
 ];

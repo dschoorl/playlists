@@ -1,14 +1,14 @@
 <div class="intro">
-  <h1>Introduction</h1>
+  <app-profile />
   <p>
-    On this page you can retrieve the list of single releases from the bakend
-    server that made the Dutch tipparade / top-40 of a certain year and compile
-    a private playlist on Spotify.
+    On this page you can retrieve the list of single releases from the playlist
+    server that made the Dutch tipparade / top-40 in a certain year and create
+    your private Spotify playlist from it.
   </p>
   <ol>
     <li>
-      First choose a year and a list of singles will be displayed that charted
-      that year.
+      First choose a year in the dropdown below, and a list of songs will be
+      displayed that charted that year.
     </li>
     <li>
       Then click the 'Get playlist tracks' button to retrieve existing playlist
@@ -19,14 +19,18 @@
   <p>
     If the playlist exists, any existing songs are matched against the charted
     items. You can now synchronize your playlist song by song or resolve all
-    unmatched items in one sweep.
+    unmatched items in one go.
   </p>
+  <em>
+    Please note that, due to different attributions or ways of writing names and
+    titles, the software may not always correctly match songs between the charts
+    and the spotify playlist.
+  </em>
 </div>
-
-<app-profile />
 
 <div class="actions">
   <span>
+    <label for="year-select">Release year: </label>
     <select
       #selectedYear
       id="year-select"

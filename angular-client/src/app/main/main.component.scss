@@ -1,7 +1,25 @@
 @import "../../global-styles/abstracts/variables";
 
-.intro {
-  max-width: 50rem;
+div.intro {
+  max-width: 60rem;
+  padding-top: 2rem;
+  padding-bottom: 1rem;
+  & ol {
+    padding-left: 2rem;
+    & li {
+      padding-top: 0.3rem;
+    }
+  }
+
+  & p,
+  & em {
+    padding-top: 0.3rem;
+  }
+
+  & h1 {
+    padding-top: 1rem;
+    padding-bottom: 0.3rem;
+  }
 }
 
 table {

@@ -1,5 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { SpotifyService } from '../spotify.service';
+import { UserProfile } from '@spotify/web-api-ts-sdk';
 
 @Component({
   selector: 'app-profile',
@@ -10,5 +11,7 @@ import { SpotifyService } from '../spotify.service';
 })
 export class ProfileComponent {
   private spotifyService = inject(SpotifyService);
-  userProfile = this.spotifyService.ro_userProfile;
+  userProfile = computed<UserProfile | undefined>(() =>
+    this.spotifyService.ro_userProfile()
+  );
 }

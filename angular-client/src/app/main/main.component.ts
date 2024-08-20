@@ -36,7 +36,9 @@ export class MainComponent {
   constructor(
     private httpClient: HttpClient,
     private spotifyService: SpotifyService
-  ) {}
+  ) {
+    this.spotifyService.init();
+  }
 
   getReleases(year: string) {
     this.releaseYear.set(Number.parseInt(year));

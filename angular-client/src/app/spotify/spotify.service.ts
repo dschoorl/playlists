@@ -1,5 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import {
+  GenericCache,
+  ICacheStore,
   Market,
   SimplifiedPlaylist,
   SpotifyApi,
@@ -11,9 +13,32 @@ import { queryStringComposer } from '../../util/QueryStringComposer';
 import { scoreMatch } from '../../util/SongMatcher';
 import { environment } from '../../environments/environment';
 
-const TOKEN_KEY = 'spotify.accessToken';
+// Let the Spotify API handle refreshing OAuth token
+const SDK_TOKEN_KEY = 'spotify-sdk:AuthorizationCodeWithPKCEStrategy:token';
 const CLIENT_ID = environment.spotifyClientId || 'not configured';
 const LIMIT = 50;
+
+/** Copied and adapted from LocalStorageCachingStrategy of the Spotify API source code */
+class SessionStorageCachingStrategy extends GenericCache {
+  constructor() {
+    super(new SessionStorageCacheStore());
+  }
+}
+
+/** Copied and adapted from LocalStorageCachingStrategy of the Spotify API source code */
+class SessionStorageCacheStore implements ICacheStore {
+  public get(key: string): string | null {
+    return sessionStorage.getItem(key);
+  }
+
+  public set(key: string, value: string): void {
+    sessionStorage.setItem(key, value);
+  }
+
+  public remove(key: string): void {
+    sessionStorage.removeItem(key);
+  }
+}
 
 /**
  * See https://github.com/spotify/spotify-web-api-ts-sdk
@@ -36,26 +61,24 @@ export class SpotifyService {
       'playlist-modify',
       'user-read-private',
       'user-read-email',
-    ]
+    ],
+    {
+      //prefer session storage over (default) local storage (in case computers are shared amongst users)
+      cachingStrategy: new SessionStorageCachingStrategy(),
+    }
   );
 
   constructor() {
     // OnInit-interface does nothing on an @Injectable, so we must initialize in constructor
     console.log('CLIENT_ID=' + CLIENT_ID);
-    this.restoreAccessTokenFromStorage();
   }
 
-  async restoreAccessTokenFromStorage() {
-    const accessTokenString = sessionStorage.getItem(TOKEN_KEY);
-    if (accessTokenString) {
-      this.spotifyApi = SpotifyApi.withAccessToken(
-        CLIENT_ID,
-        JSON.parse(accessTokenString)
-      );
-      this.userProfile.set(await this.spotifyApi.currentUser.profile());
-      console.log(
-        `Logged in through accessToken as ${this.userProfile()?.display_name}`
-      );
+  init() {
+    if (this.userProfile() != null) {
+      console.log('Initializing SpotifyService instance (loading profile)');
+      (async () => {
+        this.userProfile.set(await this.spotifyApi.currentUser.profile());
+      })();
     }
   }
 
@@ -67,19 +90,17 @@ export class SpotifyService {
     );
     if (response.authenticated) {
       this.userProfile.set(await this.spotifyApi.currentUser.profile());
-      sessionStorage.setItem(TOKEN_KEY, JSON.stringify(response.accessToken));
     }
     return response.authenticated;
   }
 
   logout() {
     this.spotifyApi.logOut();
-    sessionStorage.removeItem(TOKEN_KEY);
     this.userProfile.set(undefined);
   }
 
   isConnected() {
-    return sessionStorage.getItem(TOKEN_KEY) != null;
+    return sessionStorage.getItem(SDK_TOKEN_KEY) != null;
   }
 
   async getPlaylistTracks(playlist: SimplifiedPlaylist) {
