@@ -15,41 +15,19 @@
  */
 package info.rsdev.playlists;
 
-import java.util.Arrays;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import info.rsdev.playlists.services.MusicTitleService;
-import jakarta.annotation.Resource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author Dave Schoorl
  */
 @SpringBootApplication
-public class Playlists  implements CommandLineRunner {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Playlists.class);
-    
-    @Resource
-    private MusicTitleService titleService;
+@EnableScheduling
+public class Playlists {
 
     public static void main(String[] args) {
         SpringApplication.run(Playlists.class, args);
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        var startTime = System.currentTimeMillis();
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Program arguments: {}", Arrays.toString(args));
-        }
-
-        titleService.init();
-        LOGGER.info("Datastore initialized after {}s", (System.currentTimeMillis() - startTime) / 1000);
-    }
 }
