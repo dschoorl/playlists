@@ -18,15 +18,13 @@ package info.rsdev.playlists.config;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import jakarta.annotation.Resource;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
-import info.rsdev.playlists.services.ScrapeService;
-import info.rsdev.playlists.services.Top40ScrapeService;
+import jakarta.annotation.Resource;
 import se.michaelthelin.spotify.SpotifyApi;
 
 /**
@@ -35,15 +33,11 @@ import se.michaelthelin.spotify.SpotifyApi;
  */
 @Configuration
 @PropertySource(value = "file:${user.home}/.playlists/spotify.properties")
+@Profile("spotify")
 public class SpringCommonConfig {
 
 	@Resource
 	private Environment env;
-
-	@Bean
-	public ScrapeService scrapeService() {
-		return new Top40ScrapeService();
-	}
 
 	@Bean
 	public SpotifyApi spotifyApi() {

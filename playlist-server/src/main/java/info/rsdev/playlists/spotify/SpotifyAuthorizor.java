@@ -20,6 +20,7 @@ import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -39,6 +40,7 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.Author
  */
 @Lazy
 @Component
+@Profile("spotify")
 public class SpotifyAuthorizor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyAuthorizor.class);
