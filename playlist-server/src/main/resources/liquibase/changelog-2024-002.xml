@@ -1,0 +1,24 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd 
+       http://www.liquibase.org/xml/ns/dbchangelog 
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Load pre-scraped data to prevent irritating the top-40 website owners -->
+    <changeSet author="dschoorl" id="2">
+        <delete tableName="chart_items"/>
+
+        <!-- 
+             CSV file is created with the following sql command (header line was added manually to the csv-file): 
+             select chart_id, year, week_number, position, if(is_newcommer,1,0), artist, title into outfile '/tmp/chart_items.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '\t' OPTIONALLY ENCLOSED BY '`' LINES TERMINATED BY "\n" from chart_items;
+         -->
+        <loadData tableName="chart_items" 
+            file="chart_items-2024-08-20.csv"
+            relativeToChangelogFile="true"
+            usePreparedStatements="true"
+            quotchar="`"
+            separator="\t"
+        />
+    </changeSet>
+</databaseChangeLog>
