@@ -19,8 +19,13 @@ export const connectedGuard: CanMatchFn = function (
 
   // this guard is only applied to /main/* paths, we do not need to consider the actual path
   if (spotifyService.isConnected()) {
+    console.log(
+      'Connected to Spotify, continue to ' +
+        segments.map((s) => s.path).join('/')
+    );
     return true;
   }
 
-  return new RedirectCommand(router.parseUrl('/start'));
+  console.log('Not connected to Spotify, redirect to /connect');
+  return new RedirectCommand(router.parseUrl('/connect'));
 };

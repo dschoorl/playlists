@@ -15,6 +15,7 @@ import { environment } from '../../environments/environment';
 
 // Let the Spotify API handle refreshing OAuth token
 const SDK_TOKEN_KEY = 'spotify-sdk:AuthorizationCodeWithPKCEStrategy:token';
+const PROFILE_KEY = 'playlists.spotify.profile';
 const CLIENT_ID = environment.spotifyClientId || 'not configured';
 const LIMIT = 50;
 
@@ -54,7 +55,7 @@ export class SpotifyService {
 
   private spotifyApi = SpotifyApi.withUserAuthorization(
     CLIENT_ID,
-    'http://localhost:4200/start',
+    window.location.protocol + '//' + window.location.host + '/connect',
     [
       'playlist-read-private',
       'playlist-modify-private',
@@ -71,15 +72,41 @@ export class SpotifyService {
   constructor() {
     // OnInit-interface does nothing on an @Injectable, so we must initialize in constructor
     console.log('CLIENT_ID=' + CLIENT_ID);
+
+    //load userprofile from storage
+    const profileString = sessionStorage.getItem(PROFILE_KEY);
+    if (profileString) {
+      const userProfile: UserProfile = JSON.parse(profileString);
+      console.log(
+        '[SpotifyService.new] Loaded UserProfile from sessionStorage: ' +
+          userProfile.display_name
+      );
+      this.userProfile.set(userProfile);
+    }
   }
 
   init() {
-    if (this.userProfile() != null) {
+    if (!this.userProfile()) {
       console.log('Initializing SpotifyService instance (loading profile)');
-      (async () => {
-        this.userProfile.set(await this.spotifyApi.currentUser.profile());
-      })();
+      (async () => await this.loadUserProfile())();
     }
+    console.log(
+      '[SpotifyService.init] Connected as ' + this.userProfile()?.display_name
+    );
+  }
+
+  private async loadUserProfile() {
+    const userProfile = await this.spotifyApi.currentUser.profile();
+    if (userProfile) {
+      sessionStorage.setItem(PROFILE_KEY, JSON.stringify(userProfile));
+      this.userProfile.set(userProfile);
+    } else {
+      sessionStorage.removeItem(PROFILE_KEY);
+    }
+    console.log(
+      '[SpotifyService.loadUserProfile] Connected as ' +
+        userProfile?.display_name
+    );
   }
 
   async authenticate() {
@@ -89,18 +116,19 @@ export class SpotifyService {
       response.accessToken
     );
     if (response.authenticated) {
-      this.userProfile.set(await this.spotifyApi.currentUser.profile());
+      await this.loadUserProfile();
     }
     return response.authenticated;
   }
 
   logout() {
     this.spotifyApi.logOut();
+    sessionStorage.removeItem(PROFILE_KEY);
     this.userProfile.set(undefined);
   }
 
   isConnected() {
-    return sessionStorage.getItem(SDK_TOKEN_KEY) != null;
+    return sessionStorage.getItem(PROFILE_KEY) != null;
   }
 
   async getPlaylistTracks(playlist: SimplifiedPlaylist) {

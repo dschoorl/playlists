@@ -37,6 +37,7 @@ export class MainComponent {
     private httpClient: HttpClient,
     private spotifyService: SpotifyService
   ) {
+    console.log('MainComponent created');
     this.spotifyService.init();
   }
 
