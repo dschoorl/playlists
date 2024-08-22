@@ -1,0 +1,29 @@
+# This compose file completes the default docker compose file for local development
+version: '3.1'
+
+services:
+  playlists:
+    build:
+      # Move the context up to the projects'' basedir, otherwise we cannot access the produced jar file'
+      context: ..
+      dockerfile: docker/playlists.Dockerfile
+    environment:
+      SPOTIFY_CLIENT_ID: ${PLAYLISTS_CLIENT_ID}
+      SPOTIFY_CALLBACK_URL: localhost:8888/start
+      PL_DB_HOST: mariadb:3306
+      WAIT_HOSTS: mariadb:3306
+    ports:
+      - '8888:8080'
+    depends_on:
+      - mariadb
+#    entrypoint: /wait && java -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n -jar playlists.jar
+
+  mariadb:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: 'yes :-)'
+      MYSQL_DATABASE: playlists
+    ports:
+      - '3316:3306'
+    volumes:
+      - ./setup-database.sql:/docker-entrypoint-initdb.d/setup.sql
