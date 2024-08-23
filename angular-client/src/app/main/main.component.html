@@ -50,7 +50,14 @@
 </div>
 @if (releaseYear()) { @if (isLoadingCharts()) {
 <p>Loading releases for {{ releaseYear() }} from server...</p>
-} @else { @if (charts().length > 0) {
+} @else if (isLoadingPlaylist()) {
+<p>
+  Loading playlist tracks for '{{ releaseYear() }} charted songs' from
+  Spotify...
+</p>
+} @else if (charts().length === 0) {
+<p>No releases could be loaded for {{ releaseYear() }}</p>
+} } @if (releaseYear() && charts().length > 0) {
 <table>
   <thead>
     <th>line</th>
@@ -89,14 +96,7 @@
   </tr>
   }
 </table>
-} @else {
-<p>No releases could be loaded for {{ releaseYear() }}</p>
-} } @if(isLoadingPlaylist()) {
-<p>
-  Loading playlist tracks for '{{ releaseYear() }} charted songs' from
-  Spotify...
-</p>
-} @else { @if (unmatchedFromPlaylist().length > 0) {
+} @if (! isLoadingPlaylist() && unmatchedFromPlaylist().length > 0) {
 <h1>Tracks in playlist, but not matched with released songs</h1>
 <table>
   <thead>
@@ -124,4 +124,4 @@
 <p>
   No playlist or empty playlist with name '{{ releaseYear() }} charted songs'
 </p>
-} } }
+}
