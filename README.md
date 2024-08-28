@@ -1,56 +1,96 @@
 # playlists
 
-> [!IMPORTANT]  
-> I started development of a Web GUI with the Angular framework to improve the user experience. This change makes part of the documentation below outdated. This will be fixed when a first version of the Web GUI is finalized.
-
 ## Purpose
-Compile Spotify playlists from music charts published on the internet.
+
+Compile Spotify playlists from music charts published on the internet. At present the Dutch Top40 and Tipparade are supported.
 
 ## Background
-Like most people, I love music. But the last couple of years I hardly listen to the radio anymore, so I was lacking 
-input of new music being published. And like some people, I am kind of a nerd. So one day, I started to compile a playlist 
-on Spotify per year of all music released in that year. I went over the charts at top40.nl (yes, I am Dutch) and for 
-each week, for every new entry, I looked the song up on spotify, and added it to the playlist. When I completed an annum, 
-I would listen to all the songs in the playlist and rate them. Each song I liked, I added to my playlist called "Nice", and when 
-I thought a song was awesome, I added it to a playlist called "Good and better" instead. Those two are my main playlists 
-for listening to mainstream pop music.
 
-I timed my efforts to compile the playlist on spotify and I estimated that it took me about 4 hours per quarter, that 
-is 16 hours per year. I have done this now for ten volumes of the top40, and the nerd in me wants to be complete, so I 
-have a couple of more volumes to go. That amounts to a really large number of hours compiling playlists, that I can also 
-spent in better ways.
+Like most people, I love music. But the last couple of years I hardly listen to the radio anymore, so I was lacking input of new music being released.
 
-Thus, one day, I thought that maybe I should automate the process. This little program is the result. 
+And like some people, I'm kind of a nerd. So one day, I started to compile a playlist on Spotify per year of all music released in that year. By hand that is. I went over the charts at top40.nl (yes, I am Dutch) and for each week, for every new entry, I looked up the song on spotify, and added it to the playlist. When I completed an annum, I would listen to all the songs in the playlist and rate them. Each song I liked, I added to my playlist called "Nice", and when I thought a song was awesome, I added it to a playlist called "Good and better" instead. Those two are my main playlists for listening to mainstream pop music.
+
+I timed my efforts to compile the playlist on spotify and I estimated that it took me about 4 hours per quarter, that is 16 hours per year, to create a playlist. I have done this now for ten volumes of the top40, and the nerd in me wants to be complete, so I have a couple of more volumes to go. That amounts to a really large number of hours compiling playlists, which, I thought, I could spent in better ways.
+
+Thus, one day, I decided to automate the process and this little program is the result.
 
 ## Implementation
-top40.nl does not provide an API to get the weekly charts in an automated fashion. So this program reads the html pages 
-from internet, extracts the relevant information from it and stores it in a database. Then it can compile a list of all 
+
+top40.nl does not provide an API to get the weekly charts in an automated fashion. So this program reads the html pages
+from internet, extracts the relevant information from it and stores it in a database. Then it can compile a list of all
 releases in a certain year, create a Spotify playlist and fill it with as much of the songs it can find on Spotify.
-Songs that could not be found are listed in the application log. You can try to manually find them yourself and add it to the playlist. Oftentimes you will succeed, because the artist / title from the music charts sometimes uses a different 
-spelling than Spotify. But sometimes a song is just not available, or a song is only available performed by a coverband.
 
-When you instruct the program multiple times to compile the playlist for the same year, it will never remove songs from 
-the existing playlist, it will only add new songs when they are not already present.
+Previously, the application was a commandline tool and had no Graphical User Interface for human interaction. This changed in August 2024, when I added a browser application that can be accessed via your favourite webbrowser, like Chrome, Firefox, Edge or Safari. The GUI should provide you more control and insight over the previous commandline tool. It is a first incarnation and hopefully I have some time in the future to expand it.
 
-## Setup
-What you need to get this program running, is the following:
-1. A running MariaDb database
-1. A clientId that you receive when you register this application with Spotify
-1. A Java 21 SDK (or newer)
+It is probable that the application can not find all released songs on Spotify. This can occur when the artist / title from the music charts use a different spelling than Spotify. Sometimes they have a different attribution. Or there are too many 'noice words' in either title or artist names. But it is also possible that the song is not available on Spotify. You can try to manually find them yourself in the Spotify application and add them to your playlist by hand.
 
-Below each requirement is discussed in more detail.
+When you instruct the program multiple times to compile the playlist for the same year, it will never remove songs from the existing playlist, it will only add new songs when they are not already present.
+
+## Run the demo on the internet
+
+The application is running on the internet. Go to the web address [https://playlists.rsdev.info](https://playlists.rsdev.info) to see what it's all about.
+
+_Please note a quirk during login:  
+When you connect to spotify, you stay on the /connect-page, after providing credentials to Spotify. You have to click the spotify icon again to go to the /main page. This will be solved in a future release._
+
+## Run it on your own machine
+
+The application is distributed as source code. What you need to get this program running on your machine, is the following:
+
+1. A git client to retrieve the source code
+1. A Java 21 JDK (or newer) to compile the source code to executable code
+
+plus
+
+3. A running MariaDb database (for data storage that survives reboots)
+
+or
+
+3. Docker (for data storage that lasts as long as you keep the application running) \*)
+
+and optionally
+
+4. A clientId, in case you have your own application registration with Spotify
+
+In the next sections, each requirement is discussed in more detail.
+
+_**Footnote:**_  
+_\*) If you know docker well, you probably know ways to use docker with persistent storage that survives reboots_
+
+### A git client
+
+The Playlists application is currently only distributed as source code on [GitHub](https://github.com/dschoorl/playlists) (You know where) Use your favourite git client to clone the repository on your local machine. When you use the git commandline, it may look something like this:
+
+```
+git clone https://github.com/dschoorl/playlists.git
+```
+
+This will create a subdirectory in your current directory with the source code. This subdirectory is refered to as 'the project root directory'.
+
+### Java 21 JDK or newer
+
+you know if you have Java JDK version 21 or newer installed, when you get an valid answer from the following command in the terminal:
+
+```
+javac -version
+```
+
+If it cannot find javac or the version number it displays is lower than 21, you have work to do. It is beyond the scope of this `readme` to give instructions, but if you cannot progress after searching the internet for information on how to install JDK 21 on you Operating System, this might help: [https://adoptium.net/](https://adoptium.net/)
 
 ### A running MariaDb database
-When I started the project, I choose a NoSQL database over a relational one, only for me to gain some experience with this type 
-of database. However, it is not a good fit for this application, so I decided to change it back to a relational one. Since September 2023 
+
+When I started the project, I choose a NoSQL database over a relational one, only for me to gain some experience with this type
+of database. However, it is not a good fit for this application, so I decided to change it back to a relational one. Since September 2023
 it will use a MariaDb relational database.
 
-If you not already have a MariaDb server running (MySql should work as well), please install one. You can find installation instructions 
-for windows [here](https://www.mariadbtutorial.com/getting-started/install-mariadb/) or for Linux 
-[here](https://www.digitalocean.com/community/tutorial-collections/how-to-install-mariadb). I have tested the application against MariaDb 
-10.11. The application uses Liquibase to update the table structure over time. You must only create the database yourself plus create two 
-accounts, one with rights to maintain the data and one with the rights to maintain the datbase structure. You could use the sql below for 
-inspiration:
+If you not already have a MariaDb server running (MySql should work as well), please install one. _Please note: you can run the application without installing mariadb on your computer by using docker. Instructions for docker are provided later in this readme._
+
+You can find installation instructions
+for windows [here](https://www.mariadbtutorial.com/getting-started/install-mariadb/) and for Linux
+[here](https://www.digitalocean.com/community/tutorial-collections/how-to-install-mariadb). I have tested the application against MariaDb version
+10.11. The application uses Liquibase to update the table structure over time. You must only create the database yourself plus create two
+accounts, one with rights to maintain the data and one with the rights to maintain the datbase structure. You could use the sql below for
+inspiration (read: change the passwords to something only you know):
 
 ```sql
 create database if not exists playlists;
@@ -71,117 +111,59 @@ spring.liquibase.password=<password_of_liquibase>
 spring.datasource.password=<password_of_pl_user>
 ```
 
-You must substitute these dummy passwords with the values you have used when you created the accounts.
+You must substitute these dummy passwords with the values you have used when you created the accounts in mariadb.
 
+### Docker
+
+Docker is a tool to virtualize an applications' runtime environment. It has many benefits, one of them being the ability to run an application with minimum setup effort by the user.
+
+Docker is distributed for all major operating systems. If you not already have it on your computer, you can find installation instructions [here](https://docs.docker.com/get-started/get-docker/)
 
 ### A Spotify clientId
-Before the playlists application can access Spotify, you must register it with Spotify and receive a clientId. A 
-clientId is personal information, and you should not share it with others. Completing the registration process is 
-(almost) a breeze:
 
-- Go to the Spotify developers website's dashboard at https://developer.spotify.com/dashboard/
-- Click on login and use an existing Spotify account or create a new developer account
-- From the dashboard, you can click the 'create clientid' button or click on the 'my new app' tile. Both do the same thing.
-- Fill out the paperwork. Choose the name you like and also select desktop app as type of application and I guess 
-  choosing non commercial integration would make sense.
-- When finished, you are taken to the details of the newly created Spotify app. There you see the ClientId. Copy it, you 
-  need this later on.
-- Below that, you see the text "Show client secret". Click on the text to reveal it. A client secret is the password that 
-  goes with the clientid. Copy the client secret, you need it lateron.
-- Next, you need to click on the button 'Edit settings' in the same window. It will open the settings of your application 
-  as recorded by Spotify. In the settings, you need to add a redirectUrl. The URL is used by Spotify to deliver the
-  authorization code to your application. Normally, the URL would point to a callback function in your web application and 
-  the authorization code would be processed automatically. But since playlists is a command line application, the 
-  authorization code needs to be provided to the 
-  playlists application via a properties file. Therefore, the value you provide for the redirectUrl should be a non-existing url, E.g. 
-  https://playlists.for.me. Fill your (dummy) redirectUrl in at the appropriate place in the settings (don forget to click 
-  'Add' (nor 'Save´ at the bottom).
+This application will exchange data with Spotify on your behalve. That means you must provide your credentials to Spotify and grant the application the rights to create and modify playlists for you.
+
+I have registered the application with Spotify and received a client id and a client secret, that proves that I am the registration holder for the playlists application. The client id is needed to exchange data with Spotify, and it is included in the source code. This is fine for you, unless you want to deviate from my setup: e.g. run on a different TCP port or on a host other than localhost. In that case, you must tell Spotify to use another redirectUrl, reflecting your port and host name. And that means you must make your own registration with Spotify and get your own client id.
+
+If you will use my setup instructions, you can stop reading this section and move on to the next: [Building and running](#building-and-running).
+
+Still reading? That means you want to create your own client id with Spotify.
+
+First complete the registration process (see steps below) to obtain a client id. Then I will tell you how to provide it to the application
+
+- Go to the Spotify developers website's dashboard at https://developer.spotify.com/
+- Click on login and use an existing Spotify account or create a new (developer) account
+- When required, accept the license and/or verify your email address
+- From the dashboard, you can click the 'create app' button
+- Choose the name and description so you know what it is for so you will recognize it's purpose in the future.
+- Fill out the URI that Spotify will use to redirect to after login. The playlists application expects something like http[s]://hostname[:port]/connect. You can choose anything before /connect, but the application expects the path /connect. You can supply multiple URI's and you can change them lateron, if they turn out to be incorrect.  
+  I myself have the following URI's registered:
+  1. http://localhost:8080/connect (for running as java application)
+  1. http://localhost:8888/connect (for running with docker)
+  1. https://playlists.rsdev.info/connect (for my online demo)
+- When finished, you are taken to the details of the newly created Spotify app. There you see the ClientId. Copy it, you need this later on.
 - You are now done registering the application with Spotify. If you like you can logout.
 
-Next, we need to pass on the information from Spotify to the playlists program via a properties file. Follow these steps:
-- In your home folder, in the sub directory `.playlists`, create a new file called `spotify.properties`. It must 
-  contain the property `spotify.clientId` and `spotify.clientSecret`, both with the correct values you copied a few
-  steps back.
-- The spotify.properties file must also contain the property `spotify.redirectUrl`, with the value of the redirectUrl
-  that you filled out on Spotify a few steps back.
-- The spotify.properties must also contain a property called `spotify.authCode`. This is the authorization code and the 
-  application needs a valid code in order to be able to maintain playlists on behalf of some user. In the section below, 
-  titled 'running', I will explain how to obtain an authorization code. For now you can leave the value empty.
+Next, we need to change the client id in the source code and replace it with your's.
 
-At this point, the spotify.properties file could look something like this:
+From the project root folder, edit two files on the path `angular-client/src/environments/environment.ts` and `angular-client/src/environments/environment.development.ts`, so that the value of `spotifyClientId` contains your client id (must be between quotes, because it is a string value).
 
-```
-spotify.clientId=e43b7a0a10934c74442fe65abc4d6ee6
-spotify.clientSecret=d08e81fd0bfb9ed0a0007ffd0ff70067
-spotify.redirectUrl=https://playlists.for.me
-spotify.authCode=
-```
+Now you are ready to build and run the application with your client id.
 
-### A Java 21 SDK (or newer)
-The application runs on a Java 21 Virtual Machine, so you must have a working installation on your computer. The project 
-uses Gradle as build tool. You do not need to have Gradle installed prior to building the project, because it will download
-itself automatically. However, you do need git installed on your machine.
+### Building and running
 
-First you need to clone the playlist project from Github.com to your local machine. You can do this from the commandline 
-or from your favourite IDE (if your are a software developer)). The clone URL is https://github.com/dschoorl/playlists.git.
+The project uses Gradle as build tool. You do not need to have Gradle installed prior to building the project, because the right version will be download automatically.
 
-From the commandline, go into the 'playlist' subdirectory that was created by the git-clone command. This is the project
-directory. From here you can build and run the application.
+Execute the following command to build the project from the project root:  
+On Windows: `gradelw.bat build `  
+On Mac/Linux: `./gradlew build`
 
-Execute the following command to build the project:   
-On Windows: ```gradelw.bat build ```   
-On Mac/Linux: ```./gradlew build```
+This will create a fat jar in the sub directory called `playlist-server/build/libs` that can be executed with the `java -jar` command:
 
-This will create a fat jar in the sub directory called `playlist-server/build/libs` that can be executed with the `java -jar` command:  
+On Windows: `java -jar playlist-server\build\libs\playlists.jar --spring.profiles.active=local`  
+On Mac/Linux: `java -jar playlist-server/build/libs/playlists.jar --spring.profiles.active=local`
 
-On Windows: `java -jar playlist-server\build\libs\playlists.jar --spring.profiles.active=local`   
-On Mac/Linux: `java -jar playlist-verver/build/libs/playlists.jar --spring.profiles.active=local`   
-
-Please continue reading the next section where it is explained what the application is doing or trying to do.
-
-#### Running - obtain a (temporary) Spotify authorization code
-
-When you run the application, it needs a valid authorization code to access Spotify. Unfortunately, this process can not be done 
-automatically, since playlists is a command line application. The token is obtained by the user manually. A code is 
-usually valid for one run. After that, you must repeat the authorization proces.
-
-When there is no authorization code, or the token has expired, the application log will show a stacktrace containing a URL 
-that you must copy/paste into your web browser. The URL looks something like this:
-
-```
-https://accounts.spotify.com/authorize?response_type=code&client_id=e43b7a0a10934c74442fe65abc4d6ee6&redirect_uri=https%3A%2F%2Fplaylists.for.me&scope=playlist-read-private%20playlist-modify-private%20playlist-modify%20user-read-private%20user-read-email
-```
-
-When you copy/paste the URL in the address bar of your browser, you are redirected to a Spotify authorization page where 
-you, as a Spotify user, can provide your credentials. At the end of the process, your browser should show a standard 
-error page indicating that the website pointed to cannot be found (it is the redirectUrl that you configured in Spotify 
-dashboard). The url in your browser address bar now contains the accessToken that you need to fill out in the 
-spotify.properties file.
-
-if the url in your browser looks like this:
-
-```
-https://playlists.for.me/?code=AQDqz-uel9A0RatFTpHxh0byHzOKtCnj-4aPzFwjNZruUQht7__lTZuqXXxEJQarcnGnx6RRDlDtJsWzdW32msi8FmBAzaEApqm5U_viwngKEbliZa_0BF9t93QBmC5jEJVeO7jhpDYp4mE2_lJn7OH2rx26OTk7p-6SITTNKpXqmgXKazJveuCC9ZRXiUH1XfLlTJWJyZneqWT0yA47uWl3PJFLxcEdXAYr2gDJFK-P7AFukpZBdv7Uje-sqxnXStr46Hbc7XUNymoC7RZlpSzVArrP9UDrWxGe#_=_
-```
-
-Your spotify.properties should look like this after pasting the authorization code (if the code ends with `#_=_`, leave those characters off):
-
-```
-spotify.clientId=e43b7a0a10934c74442fe65abc4d6ee6
-spotify.clientSecret=d08e81fd0bfb9ed0a0007ffd0ff70067
-spotify.redirectUrl=https://playlists.for.me
-spotify.authCode=AQDqz-uel9A0RatFTpHxh0byHzOKtCnj-4aPzFwjNZruUQht7__lTZuqXXxEJQarcnGnx6RRDlDtJsWzdW32msi8FmBAzaEApqm5U_viwngKEbliZa_0BF9t93QBmC5jEJVeO7jhpDYp4mE2_lJn7OH2rx26OTk7p-6SITTNKpXqmgXKazJveuCC9ZRXiUH1XfLlTJWJyZneqWT0yA47uWl3PJFLxcEdXAYr2gDJFK-P7AFukpZBdv7Uje-sqxnXStr46Hbc7XUNymoC7RZlpSzVArrP9UDrWxGe
-```
-
-After replacing the previous spotify.authCode value in the spotify.property file, you can re-run the application 
-and it should now be able to connect to Spotify on your behalf.
-
-First thing that the application will do, is go to the website of top40, load all the top-40 and tipparade info from
-it, and store it in it's database. For the first time, this can take a while, since these charts date back to the sixties. 
-In subsequent runs, it will only load missing editions of the supported music charts.
-
-Then it will query the database to retrieve all released singles that entered these charts for the year you asked for
-through a commandline argument. It will log some interesting details like displayed below:
+You are now running the application as a Java process. You will see the application log that looks something similar like the one below:
 
 ```
   .   ____          _            __ _ _
@@ -190,64 +172,94 @@ through a commandline argument. It will log some interesting details like displa
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::        (v2.1.0.RELEASE)
 
-2018-11-21 09:53:51.471  INFO 8913 --- [           main] i.rsdev.playlists.Playlists$Companion    : Starting Playlists.Companion
-2018-11-21 09:53:51.474  INFO 8913 --- [           main] i.rsdev.playlists.Playlists$Companion    : No active profile set, falling back to default profiles: default
-2018-11-21 09:53:53.043  INFO 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Read 745 cache entries from file
-2018-11-21 09:53:53.202  INFO 8913 --- [           main] i.rsdev.playlists.Playlists$Companion    : Started Playlists.Companion in 2.038 seconds (JVM running for 2.482)
-2018-11-21 09:53:53.203  INFO 8913 --- [           main] info.rsdev.playlists.Playlists           : Program arguments: [2018]
-2018-11-21 09:53:53.427  WARN 8913 --- [           main] i.r.p.services.MusicChartsService        : Datastore contains data for TOP40 from 2018, week 46
-2018-11-21 09:53:53.438  WARN 8913 --- [           main] i.r.p.services.MusicChartsService        : Datastore contains data for TIPPARADE from 2018, week 46
-2018-11-21 09:53:54.362  INFO 8913 --- [           main] i.r.p.services.Top40ScrapeService        : Scraped week 46 of Top 40 2018
-2018-11-21 09:53:55.510  INFO 8913 --- [           main] i.r.p.services.Top40ScrapeService        : Scraped week 46 of Tipparade 2018
-2018-11-21 09:53:55.573  INFO 8913 --- [           main] info.rsdev.playlists.Playlists           : Datastore initialized after 2s
-2018-11-21 09:53:55.709  INFO 8913 --- [           main] i.r.playlists.services.PlaylistService   : Searching for 310 titles in playlist 2018 charted songs
-2018-11-21 09:53:56.900 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Drake, title=God's plan) with q='drake track:god's plan'
-2018-11-21 09:54:00.508 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Selena Gomez, title=Back 2 you '18) with q='gomez selena track:'18 2 back you'
-2018-11-21 09:54:01.560 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Snow Patrol, title=Don't give in) with q='patrol snow track:don't give in'
-2018-11-21 09:54:01.998 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Arlissa and Jonas Blue, title=Hearts ain't gonna lie) with q='arlissa blue jonas track:ain't gonna hearts lie'
-2018-11-21 09:54:02.979 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Marco Borsato & André Hazes & Nick & Simon & Jeroen Van Koningsbrugge & Diggy Dex & Xander De Buisonjé & VanVelzen, title=Vrienden - Themasong De Vrienden Van Amstel Live!) with q='andré borsato buisonjé de dex diggy hazes jeroen koningsbrugge marco nick simon van vanvelzen xander track:amstel live! themasong vrienden'
-2018-11-21 09:54:03.852 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=SFB/Ronnie Flex, title=One time) with q='flex sfb/ronnie track:one time'
-2018-11-21 09:54:04.129 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Lucas & Steve x Janieck, title=You don't have to like it) with q='janieck lucas steve track:don't have it like to you'
-2018-11-21 09:54:04.979 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Labrinth & Sia & Diplo present... LSD, title=Thunderclouds) with q='diplo labrinth lsd present... sia track:thunderclouds'
-2018-11-21 09:54:05.027 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=CMC$ & Grx feat. Icona Pop, title=X's) with q='cmc$ grx icona pop track:x's'
-2018-11-21 09:54:05.092 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Guwop x Mars x Kodak, title=Wake up in the sky) with q='guwop kodak mars track:in sky up wake'
-2018-11-21 09:54:06.478 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=P.T.M., title=Live in the moment) with q='p.t.m. track:in live moment'
-2018-11-21 09:54:06.873 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=SFB & Murda & Spanker, title=Shutdown) with q='murda sfb spanker track:shutdown'
-2018-11-21 09:54:07.585 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=XXX Tentacion x Lil Pump feat Maluma & Swae Lee, title=Arms Around You) with q='lee lil maluma pump swae tentacion xxx track:arms around you'
-2018-11-21 09:54:07.773 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Juice Wrld, title=Lucid dreams (forget me)) with q='juice wrld track:dreams forget lucid me'
-2018-11-21 09:54:07.823 DEBUG 8913 --- [           main] i.r.p.services.SpotifyCatalogService     : Not found on Spotify: Song(artist=Ali B, R3hab, Numidia & Cheb Raya, title=Dana) with q='ali b cheb numidia r3hab raya track:dana'
-2018-11-21 09:54:08.229  WARN 8913 --- [           main] i.r.playlists.services.PlaylistService   : Found 295 / of 310 on spotify
-2018-11-21 09:54:08.600  INFO 8913 --- [           main] i.r.playlists.services.PlaylistService   : Added 295 songs to playlist 2018 charted songs
-2018-11-21 09:54:08.600  INFO 8913 --- [           main] info.rsdev.playlists.Playlists           : Finished: 15s
+ :: Spring Boot ::                (v3.3.2)
+
+2024-08-28 10:55:34 INFO  info.rsdev.playlists.Playlists [StartupInfoLogger.java:50] - Starting Playlists v0.1.0-SNAPSHOT using Java 21.0.4 with PID 87779 (/home/dschoorl/projects/playlists/playlist-server/build/libs/playlists.jar started by dschoorl in /home/dschoorl/projects/playlists)
+2024-08-28 10:55:34 INFO  info.rsdev.playlists.Playlists [SpringApplication.java:660] - The following 1 profile is active: "local"
+2024-08-28 10:55:35 INFO  o.s.b.w.e.tomcat.TomcatWebServer [TomcatWebServer.java:111] - Tomcat initialized with port 8080 (http)
+2024-08-28 10:55:35 INFO  o.a.catalina.core.StandardService [DirectJDKLog.java:173] - Starting service [Tomcat]
+2024-08-28 10:55:35 INFO  o.a.catalina.core.StandardEngine [DirectJDKLog.java:173] - Starting Servlet engine: [Apache Tomcat/10.1.26]
+2024-08-28 10:55:35 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [DirectJDKLog.java:173] - Initializing Spring embedded WebApplicationContext
+2024-08-28 10:55:35 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [ServletWebServerApplicationContext.java:296] - Root WebApplicationContext: initialization completed in 1010 ms
+2024-08-28 10:55:35 INFO  o.s.b.a.w.s.WelcomePageHandlerMapping [WelcomePageHandlerMapping.java:59] - Adding welcome page: class path resource [static/index.html]
+2024-08-28 10:55:36 INFO  liquibase.ui [JavaLogger.java:37] - WARNING:
+
+Liquibase detected the following invalid LIQUIBASE_* environment variables:
+
+- LIQUIBASE_SECRET
+
+Find the list of valid environment variables at https://docs.liquibase.com/environment-variables
+
+2024-08-28 10:55:36 WARN  liquibase.configuration [JavaLogger.java:37] -
+
+Liquibase detected the following invalid LIQUIBASE_* environment variables:
+
+- LIQUIBASE_SECRET
+
+Find the list of valid environment variables at https://docs.liquibase.com/environment-variables
+
+2024-08-28 10:55:36 INFO  liquibase.changelog [JavaLogger.java:37] - Reading from playlists.DATABASECHANGELOG
+2024-08-28 10:55:36 INFO  liquibase.ui [JavaLogger.java:37] - Database is up to date, no changesets to execute
+2024-08-28 10:55:36 INFO  liquibase.changelog [JavaLogger.java:37] - Reading from playlists.DATABASECHANGELOG
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - UPDATE SUMMARY
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - Run:                          0
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - Previously run:               2
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - Filtered out:                 0
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - -------------------------------
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - Total change sets:            2
+2024-08-28 10:55:36 INFO  liquibase.util [JavaLogger.java:37] - Update summary generated
+2024-08-28 10:55:36 INFO  liquibase.lockservice [JavaLogger.java:37] - Successfully released change log lock
+2024-08-28 10:55:36 INFO  liquibase.command [JavaLogger.java:37] - Command execution complete
+2024-08-28 10:55:37 INFO  o.s.b.w.e.tomcat.TomcatWebServer [TomcatWebServer.java:243] - Tomcat started on port 8080 (http) with context path '/'
+2024-08-28 10:55:37 INFO  info.rsdev.playlists.Playlists [StartupInfoLogger.java:56] - Started Playlists in 3.25 seconds (process running for 3.8)
 
 ```
 
-The program keeps running, although it's doing nothing and you need to stop it with Ctrl-C. 
+The application is now running and you can access the GUI from the browser via the url [http://localhost:8080](http://localhost:8080). From this browser application you can create playlists on spotify with releases of a specific year.
 
-If you now open your spotify client, you can see a new (or updated) playlist with the name '\<year> charted songs'. If 
-you asked for 2018, then the playlist is titled '2018 charted songs'.
+The application contains data untill August 2024 for the Top40 and Tipparade that is loaded into the database if you run it for the first time. A task is scheduled to run each thursday at 10:00 PM to update the data from the internet.
 
-You need to follow this procedure again for each year you want to create a playlist for. 
+You can stop the application with Ctrl-C.
+
+## Running with docker
+
+If you want to run with docker, you still have to buid the source code as mentioned above, but you start the application differently. You have to perform the following steps from the commmandline:
+
+Execute the following command to build the project from the project root:  
+On Windows: `gradelw.bat build `  
+On Mac/Linux: `./gradlew build`
+
+Go into the docker subdirectory and execute the following command to start mariadb and the playlists application:
+
+```
+docker compose up --build
+```
+
+This will start the application and leave the terminal window open to follow the log file.
+
+It may take a minute to start, because docker starts with an empty database and it will load data (uptill August 2024) every time you start it. When it's ready, the logfile will end with the message like `Completed initialization in 0 ms`. After that, you can access the GUI from your browser at [http://localhost:8888](http://localhost:8888) (Yes, it's a different port compared to running the application as Java process)
+
+You can stop the application with Ctrl-C and to clean up, you can type (still from the docker directory):
+
+```
+docker compose down
+```
 
 ## Status
-The program works for me, because I know how to handle and run it. I tried to explain setup and running as good as 
-possible, so that it can work for you too. It took me 65 hours to write the first version that was feature complete for my 
-purposes, which gives me a return on investment of 4 years. I consider that to be pretty good. Meanwhile, I learned a few 
-new things. I introduced myself to ElasticSearch, my first usage of a NoSQL-database and Kotlin, but also JSoup and 
-Spotify-web-api to name a few smaller frameworks that were new to me.
 
-I will continue to support this project. My original goal was to use this project as a playground for new technologies, but recently I am trying to find a balance between productivity and experimenting with new technologies. As a result I switched back from Kotlin to Java 17 and from ElasticSearch to MariaDb. 
+The program works for me, because I know how to handle and run it. The GUI makes it easier to use for the uninitiated, but it is not (yet) 'commercial grade' quality.
+
+I tried to explain setup and running as good as possible, so that it can work for you too. The side-goals for this project is to learn new technologies that I have not yet worked. E.g. I introduced myself to ElasticSearch, my first usage of a NoSQL-database, and the Kotlin programming language, learn the Angular web framework for the GUI, use Gradle as build tool, but also JSoup and Spotify-web-api to name a few smaller frameworks that were new to me.
 
 I have some additional ideas to add to the program, more in the area of functional requirements, like
+
 1. Improve the algorithm that detects if a song is already in a playlist or not
 1. Support more music charts, like Billboard etc.
 1. Support more music providers, like Deezer, Apple music or Google play.
-1. Provide GUI to visually compile playlists from custom queries on the elastic search database
+1. Improve the GUI
 
-If you would like to help, send me a message. Let me know what you want to do and what information you need to get you 
-started. And submit your changes for review via a pull request.
+If you would like to help, send me a message. Let me know what you want to do and what information you need to get you started. And submit your changes for review via a pull request.
 
 I hope you enjoy this project.
 
