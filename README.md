@@ -38,7 +38,7 @@ When you connect to spotify, you stay on the /connect-page, after providing cred
 The application is distributed as source code. What you need to get this program running on your machine, is the following:
 
 1. A git client to retrieve the source code
-1. A Java 21 JDK (or newer) to compile the source code to executable code
+1. A Java 25 JDK (or newer) to compile the source code to executable code
 
 plus
 
@@ -67,15 +67,15 @@ git clone https://github.com/dschoorl/playlists.git
 
 This will create a subdirectory in your current directory with the source code. This subdirectory is refered to as 'the project root directory'.
 
-### Java 21 JDK or newer
+### Java 25 JDK or newer
 
-you know if you have Java JDK version 21 or newer installed, when you get an valid answer from the following command in the terminal:
+you know if you have Java JDK version 25 or newer installed, when you get an valid answer from the following command in the terminal:
 
 ```
 javac -version
 ```
 
-If it cannot find javac or the version number it displays is lower than 21, you have work to do. It is beyond the scope of this `readme` to give instructions, but if you cannot progress after searching the internet for information on how to install JDK 21 on you Operating System, this might help: [https://adoptium.net/](https://adoptium.net/)
+If it cannot find javac or the version number it displays is lower than 25, you have work to do. It is beyond the scope of this `readme` to give instructions, but if you cannot progress after searching the internet for information on how to install JDK 25 on you Operating System, this might help: [https://adoptium.net/](https://adoptium.net/)
 
 ### A running MariaDb database
 

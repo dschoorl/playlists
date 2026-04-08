@@ -16,7 +16,7 @@ public record InternetChartsFetcher(String location) implements DocumentFetcher 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternetChartsFetcher.class);
 
-    private static final String ABORT_MSG = "Website down? Abort scraping to prevent holes in the chart data.";
+    private static final String ABORT_MSG = "Website down [%s]? Abort scraping to prevent holes in the chart data.";
     
     private static final String USERAGENT_STRING = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0";
 
@@ -31,9 +31,9 @@ public record InternetChartsFetcher(String location) implements DocumentFetcher 
                 LOGGER.error("Could not fetch data from {}: {}", location(), e.getMessage());
                 return Optional.empty();
             }
-            throw new FailedHostException(ABORT_MSG, e);
+            throw new FailedHostException(ABORT_MSG.formatted(location()), e);
         } catch (IOException e) {
-            throw new FailedHostException(ABORT_MSG, e);
+            throw new FailedHostException(ABORT_MSG.formatted(location()), e);
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Fetched {} in {} ms.", location(), System.currentTimeMillis() - start);

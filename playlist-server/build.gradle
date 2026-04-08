@@ -1,7 +1,9 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.11'
+    id 'org.springframework.boot' version '3.5.13'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
+    id 'idea'
+    id 'eclipse'
 }
 
 repositories {
@@ -13,12 +15,27 @@ version = '0.1.0-SNAPSHOT'
 bootJar.archiveFileName="playlists.jar"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
-tasks.withType(JavaCompile) {
-    options.release = 21
+eclipse {
+    classpath {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
     options.encoding = "UTF-8"
 }
 

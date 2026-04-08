@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-noble
+FROM eclipse-temurin:25-jre-noble
 
 WORKDIR /usr/lib/playlists
 
