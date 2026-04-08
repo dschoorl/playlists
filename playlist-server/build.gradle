@@ -14,6 +14,10 @@ group = 'info.rsdev'
 version = '0.1.0-SNAPSHOT'
 bootJar.archiveFileName="playlists.jar"
 
+// use newer versions than managed by spring boot 3.5.13 because of vulnerabilities
+ext['commons-lang3.version'] = '3.19.0'
+ext['log4j2.version'] = '2.25.4'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
@@ -54,10 +58,9 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-web')
     implementation('org.liquibase:liquibase-core')
 	implementation('org.mariadb.jdbc:mariadb-java-client')
-    implementation("org.jsoup:jsoup:1.16.1")
+    implementation("org.jsoup:jsoup:1.22.1")
     implementation("se.michaelthelin.spotify:spotify-web-api-java:7.1.0")
     implementation("info.debatty:java-string-similarity:2.0.0")
-    implementation("org.elasticsearch.client:elasticsearch-rest-high-level-client:7.3.0")
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude module: 'junit'
     }

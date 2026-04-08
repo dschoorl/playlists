@@ -3,7 +3,6 @@ package info.rsdev.playlists.services;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.apache.http.HttpStatus;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -26,7 +25,7 @@ public record InternetChartsFetcher(String location) implements DocumentFetcher 
         try {
             return Optional.ofNullable(Jsoup.connect(location()).userAgent(USERAGENT_STRING).get());
         } catch (HttpStatusException e) {
-            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+            if (e.getStatusCode() == 404) {
                 // we might query a non-existent week, e.g. week 53
                 LOGGER.error("Could not fetch data from {}: {}", location(), e.getMessage());
                 return Optional.empty();
