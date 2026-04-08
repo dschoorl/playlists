@@ -16,6 +16,7 @@ import { environment } from '../../environments/environment';
 // Let the Spotify API handle refreshing OAuth token
 const SDK_TOKEN_KEY = 'spotify-sdk:AuthorizationCodeWithPKCEStrategy:token';
 const PROFILE_KEY = 'playlists.spotify.profile';
+const SPOTIFY_SDK_VERIFIER_KEY = 'spotify-sdk:verifier';
 const CLIENT_ID = environment.spotifyClientId || 'not configured';
 const LIMIT = 50;
 
@@ -71,24 +72,28 @@ export class SpotifyService {
 
   constructor() {
     // OnInit-interface does nothing on an @Injectable, so we must initialize in constructor
-    console.log('CLIENT_ID=' + CLIENT_ID);
-
     //load userprofile from storage
     const profileString = sessionStorage.getItem(PROFILE_KEY);
     if (profileString) {
       const userProfile: UserProfile = JSON.parse(profileString);
       console.log(
-        '[SpotifyService.new] Loaded UserProfile from sessionStorage: ' +
+        '[SpotifyService.constructor] Loaded UserProfile from sessionStorage: ' +
           userProfile.display_name
       );
       this.userProfile.set(userProfile);
+    } else if (sessionStorage.getItem(SPOTIFY_SDK_VERIFIER_KEY)) {
+      this.init();
     }
   }
 
   init() {
     if (!this.userProfile()) {
-      console.log('Initializing SpotifyService instance (loading profile)');
-      (async () => await this.loadUserProfile())();
+      console.log(
+        '[SpotifyService.init] Initializing SpotifyService instance (loading profile)'
+      );
+      (async () => {
+        const profile = await this.loadUserProfile();
+      })();
     }
     console.log(
       '[SpotifyService.init] Connected as ' + this.userProfile()?.display_name
