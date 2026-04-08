@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.rsdev.playlists.exception.FailedHostException;
+import info.rsdev.playlists.utils.SSLUtils;
 
 public record InternetChartsFetcher(String location) implements DocumentFetcher {
 
@@ -23,7 +24,7 @@ public record InternetChartsFetcher(String location) implements DocumentFetcher 
     public Optional<Document> fetch() {
         long start = System.currentTimeMillis();
         try {
-            return Optional.ofNullable(Jsoup.connect(location()).userAgent(USERAGENT_STRING).get());
+            return Optional.ofNullable(Jsoup.connect(location()).sslContext(SSLUtils.createInsecureSSLContext()).userAgent(USERAGENT_STRING).get());
         } catch (HttpStatusException e) {
             if (e.getStatusCode() == 404) {
                 // we might query a non-existent week, e.g. week 53
