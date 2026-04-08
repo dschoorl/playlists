@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  spotifyClientId: '5729987845b8407581d36dfb759b092e',
+  spotifyClientId: 'd5a23fdf38964a1ab65a096ffaddad11',
 };

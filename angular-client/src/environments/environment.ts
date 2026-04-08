@@ -6,5 +6,5 @@ export const environment = {
    * when you register this app with your prefered app name on
    * developer.spotify.com
    */
-  spotifyClientId: '5729987845b8407581d36dfb759b092e',
+  spotifyClientId: 'd5a23fdf38964a1ab65a096ffaddad11',
 };

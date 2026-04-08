@@ -70,6 +70,8 @@ public class SpotifyAuthorizor {
 		var refreshToken = env.getProperty("spotify.refreshToken");
 		if (StringUtils.hasText(accessToken) && StringUtils.hasText(refreshToken)) {
 			//use current and existing tokens from properties file
+            LOGGER.info("Reusing spotify.accessToken={}", accessToken);
+            LOGGER.info("Reusing spotify.refreshToken={}", refreshToken);
 			return new AccessAndRefreshTokens(accessToken, refreshToken);
 		}
 		
