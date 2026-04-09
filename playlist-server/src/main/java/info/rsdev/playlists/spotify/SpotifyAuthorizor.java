@@ -36,11 +36,12 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.Author
  * This class is responsible to manage the SpotifyApi authorizations, including obtaining and persisting
  * tokens.
  * 
- * @author Dave Schoorl
+ * @deprecated Interacting with the Spotify Web API is nowadays done in Javascript (see angular-client)
  */
 @Lazy
 @Component
 @Profile("spotify")
+@Deprecated(since = "2024-06", forRemoval = true)
 public class SpotifyAuthorizor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyAuthorizor.class);

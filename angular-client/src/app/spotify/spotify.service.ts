@@ -60,6 +60,7 @@ export class SpotifyService {
     [
       'playlist-read-private',
       'playlist-modify-private',
+      'playlist-modify-public',
       'playlist-modify',
       'user-read-private',
       'user-read-email',
@@ -67,7 +68,7 @@ export class SpotifyService {
     {
       //prefer session storage over (default) local storage (in case computers are shared amongst users)
       cachingStrategy: new SessionStorageCachingStrategy(),
-    }
+    },
   );
 
   constructor() {
@@ -78,7 +79,7 @@ export class SpotifyService {
       const userProfile: UserProfile = JSON.parse(profileString);
       console.log(
         '[SpotifyService.constructor] Loaded UserProfile from sessionStorage: ' +
-          userProfile.display_name
+          userProfile.display_name,
       );
       this.userProfile.set(userProfile);
     } else if (sessionStorage.getItem(SPOTIFY_SDK_VERIFIER_KEY)) {
@@ -89,14 +90,14 @@ export class SpotifyService {
   init() {
     if (!this.userProfile()) {
       console.log(
-        '[SpotifyService.init] Initializing SpotifyService instance (loading profile)'
+        '[SpotifyService.init] Initializing SpotifyService instance (loading profile)',
       );
       (async () => {
         const profile = await this.loadUserProfile();
       })();
     }
     console.log(
-      '[SpotifyService.init] Connected as ' + this.userProfile()?.display_name
+      '[SpotifyService.init] Connected as ' + this.userProfile()?.display_name,
     );
   }
 
@@ -110,7 +111,7 @@ export class SpotifyService {
     }
     console.log(
       '[SpotifyService.loadUserProfile] Connected as ' +
-        userProfile?.display_name
+        userProfile?.display_name,
     );
   }
 
@@ -118,7 +119,7 @@ export class SpotifyService {
     const response = await this.spotifyApi.authenticate();
     console.log(
       `Logged into Spotify: ${response.authenticated}`,
-      response.accessToken
+      response.accessToken,
     );
     if (response.authenticated) {
       await this.loadUserProfile();
@@ -151,14 +152,14 @@ export class SpotifyService {
         market,
         fields,
         LIMIT,
-        offset
+        offset,
       );
       if (!result.items || result.items.length === 0) {
         hasMore = false;
       } else {
         offset += result.items.length;
         for (const item of result.items) {
-          tracks.push(item.track);
+          tracks.push(item.item);
         }
       }
     }
@@ -166,14 +167,14 @@ export class SpotifyService {
   }
 
   async findPlaylist(
-    playlistName: string
+    playlistName: string,
   ): Promise<SimplifiedPlaylist | undefined> {
     let offset = 0;
     let hasMore = true;
     while (hasMore) {
       let result = await this.spotifyApi.currentUser.playlists.playlists(
         LIMIT,
-        offset
+        offset,
       );
       if (!result.items || result.items.length === 0) {
         hasMore = false;
@@ -190,22 +191,21 @@ export class SpotifyService {
   }
 
   async createPlaylist(playlistName: string) {
-    const userId = this.userProfile()?.id;
-    if (userId) {
-      const response = await this.spotifyApi.playlists.createPlaylist(userId, {
+    const response = await this.spotifyApi.currentUser.playlists.createPlaylist(
+      {
         name: playlistName,
         public: false,
-      });
-      if (response.id) {
-        return await this.findPlaylist(playlistName);
-      }
+      },
+    );
+    if (response.id) {
+      return await this.findPlaylist(playlistName);
     }
     return undefined;
   }
 
   async deleteFromPlaylist(
     playlist: SimplifiedPlaylist | undefined,
-    track: Track
+    track: Track,
   ) {
     if (playlist) {
       await this.spotifyApi.playlists.removeItemsFromPlaylist(playlist.id, {
@@ -219,7 +219,7 @@ export class SpotifyService {
   async addToPlaylist(
     playlist: SimplifiedPlaylist | undefined,
     song: Song,
-    year: number
+    year: number,
   ) {
     if (playlist) {
       const query = queryStringComposer(song, year);
@@ -227,7 +227,7 @@ export class SpotifyService {
         query,
         ['track'],
         this.getMarket(),
-        5
+        5,
       );
       const match = this.findBestMatch(song, result.tracks.items);
       if (match) {

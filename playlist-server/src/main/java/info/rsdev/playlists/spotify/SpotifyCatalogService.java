@@ -1,17 +1,10 @@
 /*
- * Copyright 2018 Red Star Development.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2018 Red Star Development. Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the
+ * License.
  */
 package info.rsdev.playlists.spotify;
 
@@ -47,211 +40,220 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.User;
 
+/**
+ * Implementation of {@link MusicCatalogService} that interacts with the Spotify Web API. It is used to find songs on
+ * Spotify and to create playlists on Spotify.
+ * 
+ * @deprecated Interacting with the Spotify Web API is nowadays done in Javascript (see angular-client)
+ */
 @Lazy
 @Service
 @Profile("spotify")
+@Deprecated(since = "2024-06", forRemoval = true)
 public class SpotifyCatalogService implements MusicCatalogService {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyCatalogService.class);
-	private static final int SEGMENT_SIZE = 50;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpotifyCatalogService.class);
+    private static final int SEGMENT_SIZE = 50;
 
-	private QueryCache queryCache;
+    private QueryCache queryCache;
 
-	private SpotifyApi spotifyApi;
+    private SpotifyApi spotifyApi;
 
-	private User currentUser;
+    private User currentUser;
 
-	public SpotifyCatalogService(SpotifyApi spotifyApi, SpotifyAuthorizor authorizor) {
-		this.spotifyApi = spotifyApi;
-		
-		try {
-			authorizor.authorize(spotifyApi);
-			this.currentUser = getCurrentUser().orElseThrow(UnauthorizedException::new);
-			LOGGER.info("Logged in user: {}", this.currentUser.getDisplayName());
-		} catch (UnauthorizedException e) {
-		    LOGGER.error(e.getMessage());
-		    LOGGER.error(authorizor.getAuthorizationCodeUrlMessage(spotifyApi));
-//			throw new IllegalStateException(authorizor.getAuthorizationCodeUrlMessage(spotifyApi), e);
-		}
-		
+    public SpotifyCatalogService(SpotifyApi spotifyApi, SpotifyAuthorizor authorizor) {
+        this.spotifyApi = spotifyApi;
 
-		this.queryCache = new QueryCache();
-		LOGGER.info("Read {} cache entries from file", queryCache.size());
-	}
+        try {
+            authorizor.authorize(spotifyApi);
+            this.currentUser = getCurrentUser().orElseThrow(UnauthorizedException::new);
+            LOGGER.info("Logged in user: {}", this.currentUser.getDisplayName());
+        } catch (UnauthorizedException e) {
+            LOGGER.error(e.getMessage());
+            LOGGER.error(authorizor.getAuthorizationCodeUrlMessage(spotifyApi));
+            // throw new IllegalStateException(authorizor.getAuthorizationCodeUrlMessage(spotifyApi), e);
+        }
 
-	private Optional<User> getCurrentUser() {
-		try {
-			return Optional.ofNullable(spotifyApi.getCurrentUsersProfile().build().execute());
-		} catch (IOException | SpotifyWebApiException | ParseException e) {
-			LOGGER.error("Could not obtain CurrentUserProfile", e);
-			return Optional.empty();
-		}
-	}
+        this.queryCache = new QueryCache();
+        LOGGER.info("Read {} cache entries from file", queryCache.size());
+    }
 
-	public Optional<SongFromCatalog> findSong(Song song) throws IOException, SpotifyWebApiException {
-		var result = queryCache.getFromCache(song);
-		var cacheHit = false;
-		if (result.isEmpty()) {
-			result = searchSpotifyForSong(song);
-			// do not cache nulls when song is not found on spotify, since I am trying to
-			// improve my search query
-			result.ifPresent(spotifySong -> queryCache.cache(song, spotifySong));
-		} else {
-			cacheHit = true;
-		}
+    private Optional<User> getCurrentUser() {
+        try {
+            return Optional.ofNullable(spotifyApi.getCurrentUsersProfile().build().execute());
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            LOGGER.error("Could not obtain CurrentUserProfile", e);
+            return Optional.empty();
+        }
+    }
 
-		if (LOGGER.isDebugEnabled()) {
-			if (result.isEmpty()) {
-				LOGGER.debug("Not found on Spotify: {}", song);
-			} else {
-				if (LOGGER.isTraceEnabled()) { LOGGER.trace("Found (cacheHit={}): {}", cacheHit, result.orElse(null)); }
-			}
-		}
+    public Optional<SongFromCatalog> findSong(Song song) throws IOException, SpotifyWebApiException {
+        var result = queryCache.getFromCache(song);
+        var cacheHit = false;
+        if (result.isEmpty()) {
+            result = searchSpotifyForSong(song);
+            // do not cache nulls when song is not found on spotify, since I am trying to
+            // improve my search query
+            result.ifPresent(spotifySong -> queryCache.cache(song, spotifySong));
+        } else {
+            cacheHit = true;
+        }
 
-		return result;
-	}
+        if (LOGGER.isDebugEnabled()) {
+            if (result.isEmpty()) {
+                LOGGER.debug("Not found on Spotify: {}", song);
+            } else {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Found (cacheHit={}): {}", cacheHit, result.orElse(null));
+                }
+            }
+        }
 
-	private Optional<SongFromCatalog> searchSpotifyForSong(Song song) throws IOException, SpotifyWebApiException {
-		var queryWords = getQueryWords(song);
-		Optional<SongFromCatalog> result = executeTitleSearchQuery(song, queryWords.normalized())
-				.or(() -> executeTitleSearchQuery(song, queryWords.minimized()));
-		if (LOGGER.isDebugEnabled() && result.isEmpty()) {
-			LOGGER.debug("Tried normalized '{}' and minimized '{}' queries, without result.", queryWords.normalized(), queryWords.minimized());
-		}
-		return result;
-	}
-	
-	private Optional<SongFromCatalog> executeTitleSearchQuery(Song song, String queryString) {
-		var searchResult = executeSearchOnSpotify(queryString);
-		var hits = searchResult.getTotal();
-		return hits == 0 ? Optional.empty() : selectRightResult(song, searchResult);
-	}
+        return result;
+    }
 
-	private Paging<Track> executeSearchOnSpotify(String queryString) {
-		var searchRequest = spotifyApi.searchTracks(queryString).build();
-		Paging<Track> searchResult = null;
-		while (searchResult == null) {
-			try {
-				searchResult = searchRequest.execute();
-			} catch (TooManyRequestsException e) {
-				TooManyRequestsExceptionHandler.handle(LOGGER, searchRequest.getClass().getSimpleName(), e);
-			} catch (ParseException| IOException | SpotifyWebApiException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return searchResult;
-	}
+    private Optional<SongFromCatalog> searchSpotifyForSong(Song song) throws IOException, SpotifyWebApiException {
+        var queryWords = getQueryWords(song);
+        Optional<SongFromCatalog> result = executeTitleSearchQuery(song, queryWords.normalized())
+                .or(() -> executeTitleSearchQuery(song, queryWords.minimized()));
+        if (LOGGER.isDebugEnabled() && result.isEmpty()) {
+            LOGGER.debug("Tried normalized '{}' and minimized '{}' queries, without result.", queryWords.normalized(),
+                    queryWords.minimized());
+        }
+        return result;
+    }
 
-	private Optional<SongFromCatalog> selectRightResult(Song song, Paging<Track> searchResult) {
-		// select track with highest popularity score
-		Track mostPopularTrack = null;
-		for (Track candidate : searchResult.getItems()) {
-			if (mostPopularTrack == null || mostPopularTrack.getPopularity() < candidate.getPopularity()) {
-				mostPopularTrack = candidate;
-			}
-		}
-		return mostPopularTrack == null ? Optional.empty() : Optional.of(makeSongFromCatalog(song, mostPopularTrack));
-	}
+    private Optional<SongFromCatalog> executeTitleSearchQuery(Song song, String queryString) {
+        var searchResult = executeSearchOnSpotify(queryString);
+        var hits = searchResult.getTotal();
+        return hits == 0 ? Optional.empty() : selectRightResult(song, searchResult);
+    }
 
-	@Override
-	public CatalogPlaylist getOrCreatePlaylist(String playlistName) throws IOException, SpotifyWebApiException {
-		return findPlaylistWithName(playlistName).orElseGet(() -> createPlaylistWithName(playlistName));
-	}
+    private Paging<Track> executeSearchOnSpotify(String queryString) {
+        var searchRequest = spotifyApi.searchTracks(queryString).build();
+        Paging<Track> searchResult = null;
+        while (searchResult == null) {
+            try {
+                searchResult = searchRequest.execute();
+            } catch (TooManyRequestsException e) {
+                TooManyRequestsExceptionHandler.handle(LOGGER, searchRequest.getClass().getSimpleName(), e);
+            } catch (ParseException | IOException | SpotifyWebApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return searchResult;
+    }
 
-	private Optional<CatalogPlaylist> findPlaylistWithName(String targetName)
-			throws IOException, SpotifyWebApiException {
-		var iterator = PlaylistIterator.create(spotifyApi);
-		while (iterator.hasNext()) {
-			var spotifyPlaylist = iterator.next();
-			if (spotifyPlaylist.getName().equals(targetName)) {
-				LOGGER.info("Found existing playlist '{}' on Spotify", spotifyPlaylist.getName());
-				return Optional.of(makePlaylist(spotifyPlaylist));
-			}
-		}
-		return Optional.empty();
-	}
+    private Optional<SongFromCatalog> selectRightResult(Song song, Paging<Track> searchResult) {
+        // select track with highest popularity score
+        Track mostPopularTrack = null;
+        for (Track candidate : searchResult.getItems()) {
+            if (mostPopularTrack == null || mostPopularTrack.getPopularity() < candidate.getPopularity()) {
+                mostPopularTrack = candidate;
+            }
+        }
+        return mostPopularTrack == null ? Optional.empty() : Optional.of(makeSongFromCatalog(song, mostPopularTrack));
+    }
 
-	private CatalogPlaylist createPlaylistWithName(String newPlaylistName) {
-		var createRequest = spotifyApi.createPlaylist(currentUser.getId(), newPlaylistName).build();
-		try {
-			return makePlaylist(createRequest.execute());
-		} catch (IOException | SpotifyWebApiException | ParseException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public CatalogPlaylist getOrCreatePlaylist(String playlistName) throws IOException, SpotifyWebApiException {
+        return findPlaylistWithName(playlistName).orElseGet(() -> createPlaylistWithName(playlistName));
+    }
 
-	private CatalogPlaylist makePlaylist(PlaylistSimplified spotifyPlaylist) {
-		return new CatalogPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
-	}
+    private Optional<CatalogPlaylist> findPlaylistWithName(String targetName)
+            throws IOException, SpotifyWebApiException {
+        var iterator = PlaylistIterator.create(spotifyApi);
+        while (iterator.hasNext()) {
+            var spotifyPlaylist = iterator.next();
+            if (spotifyPlaylist.getName().equals(targetName)) {
+                LOGGER.info("Found existing playlist '{}' on Spotify", spotifyPlaylist.getName());
+                return Optional.of(makePlaylist(spotifyPlaylist));
+            }
+        }
+        return Optional.empty();
+    }
 
-	private CatalogPlaylist makePlaylist(Playlist spotifyPlaylist) {
-		return new CatalogPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
-	}
+    private CatalogPlaylist createPlaylistWithName(String newPlaylistName) {
+        var createRequest = spotifyApi.createPlaylist(currentUser.getId(), newPlaylistName).build();
+        try {
+            return makePlaylist(createRequest.execute());
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	private SongFromCatalog makeSongFromCatalog(Song song, Track spotifyTrack) {
-		return new SongFromCatalog(song, spotifyTrack.getUri());
-	}
+    private CatalogPlaylist makePlaylist(PlaylistSimplified spotifyPlaylist) {
+        return new CatalogPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
+    }
 
-	private SongFromCatalog makeSongFromCatalog(Track spotifyTrack) {
-		var artists = Arrays.stream(spotifyTrack.getArtists()).map(artist -> artist.getName())
-				.collect(Collectors.joining(" "));
-		var song = new Song(artists, spotifyTrack.getName());
-		return new SongFromCatalog(song, spotifyTrack.getUri());
-	}
+    private CatalogPlaylist makePlaylist(Playlist spotifyPlaylist) {
+        return new CatalogPlaylist(spotifyPlaylist.getName(), spotifyPlaylist.getId());
+    }
 
-	@Override
-	public void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs)
-			throws IOException, SpotifyWebApiException {
-		var trackIds = songs.stream().map(song -> song.trackUri()).collect(Collectors.toList());
+    private SongFromCatalog makeSongFromCatalog(Song song, Track spotifyTrack) {
+        return new SongFromCatalog(song, spotifyTrack.getUri());
+    }
 
-		// spotify accepts max. 100 songs in a single request
-		int nrOfSegments = trackIds.size() / SEGMENT_SIZE + (trackIds.size() % SEGMENT_SIZE == 0 ? 0 : 1);
-		int currentSegment = 1;
-		var playlistId = playlist.playlistId();
-		while (currentSegment <= nrOfSegments) {
-			int toIndex = currentSegment * SEGMENT_SIZE;
-			int fromIndex = currentSegment * SEGMENT_SIZE - SEGMENT_SIZE;
-			var segment = trackIds.subList(fromIndex, Math.min(toIndex, trackIds.size()));
+    private SongFromCatalog makeSongFromCatalog(Track spotifyTrack) {
+        var artists = Arrays.stream(spotifyTrack.getArtists()).map(artist -> artist.getName())
+                .collect(Collectors.joining(" "));
+        var song = new Song(artists, spotifyTrack.getName());
+        return new SongFromCatalog(song, spotifyTrack.getUri());
+    }
 
-			addToPlaylistOnSpotify(playlistId, segment.toArray(new String[segment.size()]));
-			currentSegment++;
-		}
-	}
+    @Override
+    public void addToPlaylist(CatalogPlaylist playlist, List<SongFromCatalog> songs)
+            throws IOException, SpotifyWebApiException {
+        var trackIds = songs.stream().map(song -> song.trackUri()).collect(Collectors.toList());
 
-	private SnapshotResult addToPlaylistOnSpotify(String playlistId, String[] trackIds)
-			throws IOException, SpotifyWebApiException {
-		var request = spotifyApi.addItemsToPlaylist(playlistId, trackIds).build();
-		SnapshotResult response = null;
-		while (response == null) {
-			try {
-				response = request.execute();
-			} catch (TooManyRequestsException e) {
-				TooManyRequestsExceptionHandler.handle(LOGGER, request.getClass().getSimpleName(), e);
-			} catch (ParseException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return response;
-	}
+        // spotify accepts max. 100 songs in a single request
+        int nrOfSegments = trackIds.size() / SEGMENT_SIZE + (trackIds.size() % SEGMENT_SIZE == 0 ? 0 : 1);
+        int currentSegment = 1;
+        var playlistId = playlist.playlistId();
+        while (currentSegment <= nrOfSegments) {
+            int toIndex = currentSegment * SEGMENT_SIZE;
+            int fromIndex = currentSegment * SEGMENT_SIZE - SEGMENT_SIZE;
+            var segment = trackIds.subList(fromIndex, Math.min(toIndex, trackIds.size()));
 
-	@Override
-	public Collection<SongFromCatalog> getTracksInPlaylist(CatalogPlaylist playlist)
-			throws IOException, SpotifyWebApiException {
-		var trackIterator = PlaylistTrackIterator.create(spotifyApi, playlist.playlistId());
-		var songsFromCatalog = new ArrayList<SongFromCatalog>(trackIterator.size());
-		while (trackIterator.hasNext()) {
-			var track = trackIterator.next().getTrack();
-			if (track instanceof Track) {
-				songsFromCatalog.add(makeSongFromCatalog((Track) track));
-			} else {
-				LOGGER.warn("Cannot add unsupported IPlaylistItem to playlist: " + track);
-			}
-		}
-		return songsFromCatalog;
-	}
+            addToPlaylistOnSpotify(playlistId, segment.toArray(new String[segment.size()]));
+            currentSegment++;
+        }
+    }
 
-	public void close() {
-		LOGGER.info("Write out the memory cache of {} entries to file now...", queryCache.size());
-		queryCache.writeCache();
-	}
+    private SnapshotResult addToPlaylistOnSpotify(String playlistId, String[] trackIds)
+            throws IOException, SpotifyWebApiException {
+        var request = spotifyApi.addItemsToPlaylist(playlistId, trackIds).build();
+        SnapshotResult response = null;
+        while (response == null) {
+            try {
+                response = request.execute();
+            } catch (TooManyRequestsException e) {
+                TooManyRequestsExceptionHandler.handle(LOGGER, request.getClass().getSimpleName(), e);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return response;
+    }
+
+    @Override
+    public Collection<SongFromCatalog> getTracksInPlaylist(CatalogPlaylist playlist)
+            throws IOException, SpotifyWebApiException {
+        var trackIterator = PlaylistTrackIterator.create(spotifyApi, playlist.playlistId());
+        var songsFromCatalog = new ArrayList<SongFromCatalog>(trackIterator.size());
+        while (trackIterator.hasNext()) {
+            var track = trackIterator.next().getTrack();
+            if (track instanceof Track) {
+                songsFromCatalog.add(makeSongFromCatalog((Track) track));
+            } else {
+                LOGGER.warn("Cannot add unsupported IPlaylistItem to playlist: " + track);
+            }
+        }
+        return songsFromCatalog;
+    }
+
+    public void close() {
+        LOGGER.info("Write out the memory cache of {} entries to file now...", queryCache.size());
+        queryCache.writeCache();
+    }
 
 }

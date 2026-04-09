@@ -12,6 +12,11 @@ import info.rsdev.playlists.dao.ChartsItemDao;
 import info.rsdev.playlists.domain.Song;
 import info.rsdev.playlists.services.MusicChart;
 
+/**
+ * This is the entry point for REST calls from the Angular client. A number of responsibilities
+ * have been transferred from the server to the client, such as interacting with the Spotify Web API.
+ * However, the old - and for now unused - Java implementation is still present.
+ */
 @RestController
 public class PlaylistFacade {
 

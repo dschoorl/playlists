@@ -50,7 +50,7 @@ function getTitleSearchWords(title: string) {
       }
     }
   }
-  console.log(`Search words title '${title}' -> '${searchWords.join(' ')}'`);
+  console.debug(`Search words title '${title}' -> '${searchWords.join(' ')}'`);
   return searchWords;
 }
 
@@ -64,7 +64,7 @@ function getArtistSearchWords(artists: string): string[] {
   normalizedArtists = removeArtistNoiseWords(normalizedArtists);
   normalizedArtists = normalizedArtists.replace(
     / featuring | feat. | feat | ft. | ft | with | x | mmv | m.m.v. | vs | vs. | + | and /g,
-    '&'
+    '&',
   );
 
   const disectedArtists: string[] = [];
@@ -81,8 +81,8 @@ function getArtistSearchWords(artists: string): string[] {
     disectedArtists.push(artist.trim());
   }
 
-  console.log(
-    `Search words artists '${artists}' -> '${disectedArtists.join(' ')}'`
+  console.debug(
+    `Search words artists '${artists}' -> '${disectedArtists.join(' ')}'`,
   );
   return disectedArtists;
 }

@@ -23,6 +23,8 @@ import info.rsdev.playlists.Playlists;
 import info.rsdev.playlists.services.MusicTitleService;
 import jakarta.annotation.Resource;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class ScrapeTask {
 

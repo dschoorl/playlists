@@ -35,7 +35,7 @@ export class MainComponent {
   }
   constructor(
     private httpClient: HttpClient,
-    private spotifyService: SpotifyService
+    private spotifyService: SpotifyService,
   ) {
     console.log('MainComponent created');
     this.spotifyService.init();
@@ -65,12 +65,17 @@ export class MainComponent {
 
     this.isLoadingPlaylist.set(true);
     let playlist = await this.spotifyService.findPlaylist(
-      this.spotifyService.getPlaylistName(this.releaseYear()!)
+      this.spotifyService.getPlaylistName(this.releaseYear()!),
     );
 
     if (!playlist) {
+      console.info(
+        'No playlist found for year ',
+        this.releaseYear(),
+        ', creating new playlist',
+      );
       playlist = await this.spotifyService.createPlaylist(
-        this.spotifyService.getPlaylistName(this.releaseYear()!)
+        this.spotifyService.getPlaylistName(this.releaseYear()!),
       );
     }
 
@@ -125,10 +130,10 @@ export class MainComponent {
     const match = await this.spotifyService.addToPlaylist(
       this.playlist(),
       song,
-      this.releaseYear()!
+      this.releaseYear()!,
     );
     if (match) {
-      console.log('Found match: ', match);
+      console.debug('Found match: ', match);
       const index = this.charts().indexOf(song);
       if (index > -1) {
         const updatedCharts = [...this.charts()];
@@ -136,7 +141,7 @@ export class MainComponent {
         this.charts.set(updatedCharts);
       }
     } else {
-      console.log('Not found on Spotify');
+      console.log('Not found on Spotify:', song);
     }
   }
 
@@ -156,7 +161,7 @@ export class MainComponent {
       }
     }
     console.log(
-      `Finished resolving all songs and found ${matchCounter} matches.`
+      `Finished resolving all songs and found ${matchCounter} matches.`,
     );
   }
 }
